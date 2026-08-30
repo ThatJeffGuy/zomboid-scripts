@@ -16,14 +16,25 @@
 
 set -uo pipefail
 
-RCON=rcon
-POOL=/root/pz-pool.txt
-LOG=/root/pz-supplydrop.log
+# RCON invocation. Overridable so the script runs either on the host (where a
+# wrapper named `rcon` is on PATH) or inside the server container, which ships
+# gorcon as `rcon-cli` and needs an explicit config file:
+#   RCON_BIN=rcon-cli RCON_OPTS="-c /home/steam/server/rcon.yml"
+RCON_BIN="${RCON_BIN:-rcon}"
+RCON_OPTS="${RCON_OPTS:-}"
+POOL="${POOL:-/root/pz-pool.txt}"
+LOG="${LOG:-/root/pz-supplydrop.log}"
 LOG_KEEP_HOURS=48
 MAX_ITEMS=3
 DELAY=1
 ANNOUNCE=1
 ANNOUNCE_ITEMS=0
+
+pzrcon() {
+  local -a opts=()
+  [[ -n "$RCON_OPTS" ]] && read -ra opts <<<"$RCON_OPTS"
+  command "$RCON_BIN" "${opts[@]}" "$1" 2>&1
+}
 
 ANNOUNCE_MESSAGES=(
   "A plane is seen smoking and shedding parts. You race to grab the items that fell nearby."
@@ -33,7 +44,6 @@ ANNOUNCE_MESSAGES=(
   "A parachuted crate descends through the tree line nearby detonating on impact, throwing junk everywhere."
 )
 
-pzrcon() { command "$RCON" "$1" 2>&1; }
 log()    { echo "$(date '+%F %T') $*"; }
 
 trim_log() {
