@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: genmods.sh
 # Description: Scans installed Steam Workshop content and reads mod.info files 
@@ -12,8 +13,6 @@
 #   CONTENT_DIR    (Optional) Path to the Workshop content folder. 
 #                  Defaults to /project-zomboid/steamapps/workshop/content/108600.
 # ==============================================================================
-#!/usr/bin/env bash
-
 set -uo pipefail
 
 CONTENT="${1:-/project-zomboid/steamapps/workshop/content/108600}"
