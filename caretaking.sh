@@ -1,5 +1,5 @@
 # ==============================================================================
-# Script Name: pz-caretaking.sh
+# Script Name: caretaking.sh
 # Description: Automated maintenance and restart manager for a Dockerized 
 #              Project Zomboid server. Monitors player counts, checks for 
 #              stale mods via RCON, enforces quiet hours, and handles graceful 
