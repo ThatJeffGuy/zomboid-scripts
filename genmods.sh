@@ -1,22 +1,10 @@
 #!/usr/bin/env bash
-# pz-genmods.sh v2 — build a load-ordered Mods= line from downloaded Workshop mods.
-#
-# v2 changes:
-#   * Only reads Workshop IDs listed in ALLOW (your WorkshopItems= line), so
-#     leftover mods from previous installs are ignored.
-#   * Strips any "<workshopid>/" prefix from nested mod ids.
-#   * Reports Workshop items that ship MORE THAN ONE mod, so you can choose
-#     which variant to keep instead of enabling all of them.
-#
-#   docker exec -i zomboid-server bash -s < pz-genmods.sh
-#   docker exec -i zomboid-server bash -s < pz-genmods.sh 2>/dev/null   # line only
 
 set -uo pipefail
 
 CONTENT="${1:-/project-zomboid/steamapps/workshop/content/108600}"
 [[ -d "$CONTENT" ]] || { echo "No such directory: $CONTENT" >&2; exit 1; }
 
-# ---- allowlist: exactly the WorkshopItems= line -----------------------------
 ALLOW="
     1299328280 2142622992 2286124931 2366717227 2447729538 2463184726 2544353492 2553809727
     2674541310 2699828474 2744797858 2769706949 2847184718 2857762294 2861801557 2896041179
@@ -37,27 +25,22 @@ ALLOW="
     3783094058 3784677588 3785033563 3785740658 3786125383 3786155157 3786993262 3788184989
     3790656296"
 
-# ---- tier 0: loads first (texture pass, then libraries and frameworks) ------
 T0="3119788162 3543229299 3077900375 2896041179 3402491515 3396446795 3508537032
     3634921455 3715021740 3378285185 3622629134 3470422050 3722064198
     3682045254 3567084868 3779201168 3766508989 2447729538 3414634809
     3610677934 3695167770 3002666175"
 
-# ---- tier 2: must load AFTER their base mod --------------------------------
 T2="3786125383 3766140920 3773834525 3722134990 3637364024 2463184726
     3340255334 3778709615 2914075159"
 
-# ---- tier 3: UI overrides, late --------------------------------------------
 T3="3437629766 3461263912 3536052310 3502080466 3490188370 3470659758
     3290232938 3422220305 2769706949 2744797858 3785033563 3770149036 3020323164 3565244378 3389003300
     3716522633 3776641628 3778884296 2286124931 2553809727
     2544353492 3600186927 2366717227 3409527910 3634921763 3790656296
     2847184718"
 
-# ---- tier 4: absolute last -------------------------------------------------
 T4="3423660713"
 
-# ---- mod ids to EXCLUDE (variant losers, duplicates, author-disabled) ------
 DENY="ETO_P IMWSEnergyDrinks IMWSEnergyDrinksBETA ToadTraits ToadTraitsDynamic
       ToadTraitsDisablePrepared ToadTraitsDisableSpec DBFaster25 DBFaster60
       DBFaster70 DBFaster80 Ladders42131 SomewhatWaterBright
@@ -68,7 +51,6 @@ DENY="ETO_P IMWSEnergyDrinks IMWSEnergyDrinksBETA ToadTraits ToadTraitsDynamic
       Project_Seasons_B42 Project_Seasons_B42_LITE Project_Seasons_B42_NORUST
       Siowar_distiller Siowar_distiller_easy PompCollectibles UsefulBarrelsMP"
 
-# Ids containing spaces need their own list (word-splitting would break them).
 DENY_EXACT=(
   "Buttstroke 42.12.3"
   "GanydeBielovzki's Frockin Stompers! VFR"
