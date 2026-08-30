@@ -1,3 +1,14 @@
+# ==============================================================================
+# Script Name: deploy.sh
+# Description: Automates the injection of predefined 'Mods=' and 'WorkshopItems=' 
+#              lists into the Project Zomboid server .ini configuration file. 
+#              Safely stops the container, creates an .ini backup, updates the 
+#              lists, restarts the container, and verifies successful mod loading.
+#
+# Options:
+#   -n, --dry-run  Print out what would happen without stopping the container 
+#                  or modifying the .ini file.
+# ==============================================================================
 #!/usr/bin/env bash
 set -uo pipefail
 
