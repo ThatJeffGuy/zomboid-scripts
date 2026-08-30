@@ -1,3 +1,17 @@
+# ==============================================================================
+# Script Name: supplydrop.sh
+# Description: Distributes randomized, weighted loot (supply drops) to connected 
+#              players via RCON. Includes cooldown management, broadcasts 
+#              immersive server announcements, and reads from a weighted pool file.
+#
+# Options:
+#   --dry-run             Simulate the roll and drop process without giving items
+#                         or updating the cooldown state file.
+#   --odds <N>            Run a statistical simulation of N rolls (default 1000) 
+#                         to test item weight distributions. Exits after printing.
+#   --verify <PlayerName> Spawns exactly 1 of EVERY item in the pool file into 
+#                         the target player's inventory to verify valid item IDs.
+# ==============================================================================
 #!/usr/bin/env bash
 
 set -uo pipefail
