@@ -20,12 +20,18 @@ Logic carrying script that sends "supply drops" to players online. Runs hourly a
 6. Sends inventory lottery items directly to player inventory.
 7. Creates a cooldown file for the hourly trigger; the script has built in cool downs you set, so it can only happen x amount of times per day, once every x hours, or manually run.
 
-# The rest of these scripts are fringe cases and used primarily for my server, however will post them here anyway.
+# GenMods
+Script for updating MP servers Mods= line in their server options.ini. Reads the currently loaded WorkshopID's and using folder structure, generates the names needed for the other Mods= line.
+1. Start the server, wait for full download to complete, and server is stable.
+2. Run the script, be sure to copy the lines you need to a text document.
+3. Stop the server, and once fully stopped, update the ini file with the line from Step 3.
+4. Start the server and watch logs for any errors.
 
-GenMods -- No logic here, after the server is started, generates a list for your options.ini for the Mods= line automatically, and sorts it.
+# Fringe Case Scripts
+The rest of these are generated scripts that Claude made me, to help with server deployment and mod stability. They likely serve no purpose for you, but they're here anyway.
 
 CaseLinks -- Scans for mods that incorrectly have capitals and vice versa, and renames/fixes them. Run with server offline.
 
-Refetch -- Will allow server owners to delete individal mod folders from workshop, and re-acquire it only, updating the manifest file. No more nuclear bomb diagnostics!
+Refetch -- Will allow server owners to delete individual mod folders from workshop, and re-acquire it only, updating the manifest file. No more nuclear bomb diagnostics!
 
 Deploy -- Partner script for above.
