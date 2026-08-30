@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: supplydrop.sh
 # Description: Distributes randomized, weighted loot (supply drops) to connected 
@@ -12,7 +13,6 @@
 #   --verify <PlayerName> Spawns exactly 1 of EVERY item in the pool file into 
 #                         the target player's inventory to verify valid item IDs.
 # ==============================================================================
-#!/usr/bin/env bash
 
 set -uo pipefail
 
