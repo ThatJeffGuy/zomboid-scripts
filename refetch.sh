@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: refetch.sh
 # Description: Forces a clean redownload of a specific Project Zomboid Workshop 
@@ -12,7 +13,6 @@
 #   --dry-run      Show which lines in the manifest would be deleted, without 
 #                  modifying files or deleting the content directory.
 # ==============================================================================
-#!/usr/bin/env bash
 
 set -uo pipefail
 
