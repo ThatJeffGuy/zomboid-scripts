@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: caretaking.sh
 # Description: Automated maintenance and restart manager for a Dockerized 
@@ -11,8 +12,6 @@
 #   --force     Bypass the mod freshness check and force a server restart.
 #   --status    Print the current container state and mod update status, then exit.
 # ==============================================================================
-
-#!/usr/bin/env bash
 
 set -uo pipefail
 
