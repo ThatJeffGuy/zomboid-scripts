@@ -1,79 +1,42 @@
+# Script coded by Scottish Haze aka ThatJeffGuy on Github.
+# Code ran through Cwen3 for verification of structure.
+# All code posted has successfully run on a prod game server without issues!
+# Please post bugs on the github.
+
 #!/usr/bin/env bash
-#
-# pz-caretaking.sh — Wubcord Project Zomboid mod-update watcher
-#
-# Every hour:
-#   1. Asks the PZ server over RCON whether its Workshop mods are stale
-#   2. If so, warns connected players, then waits out the warning window
-#      (30s for 4 or fewer players, 90s for 5+)
-#   3. Saves the world, then issues `quit`
-#   4. Docker's `restart: unless-stopped` brings the container back, and
-#      UPDATE_ON_START=true makes SteamCMD pull the new mod versions
-#   5. Verifies the world actually loaded, then does light housekeeping
-#
-# If the container is stopped when the script fires, it starts it, waits for
-# the world, and exits — no restart, since a cold start updates mods already.
-#
-# Cron (inside LXC, `crontab -e` as root):
-#   10 * * * * /root/pz-caretaking.sh >/dev/null 2>>/root/pz-caretaking.log
-#
-# log() already tees into the log file, so stdout goes to /dev/null; the 2>>
-# catches anything that dies outside log() — python tracebacks, docker errors.
-#
-# Requires: python3, flock (util-linux), docker CLI. All present in 201
-# already except possibly python3 — `apt-get install -y python3-minimal`.
-#
-# Flags:
-#   --dry-run   do everything except save/quit/prune (safe to run anytime)
-#   --force     skip the mod check and restart regardless
-#   --status    query players + mod state, print, exit
-#
 
 set -uo pipefail
 
-# ---------------------------------------------------------------- config ----
-
-CONTAINER=zomboid-server                    # docker container name
-RCON_HOST=127.0.0.1                         # network_mode: host, so loopback
+CONTAINER=zomboid-server
+RCON_HOST=127.0.0.1
 RCON_PORT=27015
-RCON_PASS_FILE=/root/.pz-rcon       # chmod 600, password only
+RCON_PASS_FILE=/root/.pz-rcon          # Change as needed
 
-ZOMBOID_CONFIG=/opt/app/zomboid/config
-WORLD_NAME="Wubcord Project Zomboid"
+ZOMBOID_CONFIG=/opt/app/zomboid/config          # Change as needed
+WORLD_NAME="Your Server Name"          # Change as needed
 
-LOGDIR_KEEP_HOURS=24                        # prune PZ Logs/ older than this
-DO_IMAGE_PRUNE=true                         # docker image prune -f after restart
+LOGDIR_KEEP_HOURS=24
+DO_IMAGE_PRUNE=true
 
-# Don't restart during these local hours (24h, inclusive start, exclusive end).
-# Leave both empty to disable. Example: QUIET_START=19 QUIET_END=24 defers
-# restarts during prime-time play; the next run picks it up.
-QUIET_START=""
-QUIET_END=""
+QUIET_START=""          # 1-24 hours
+QUIET_END=""          # 1-24 hours
 
-# Seconds between the warning message and the shutdown, when players are online.
-# A fuller server gets longer to find somewhere safe to log out.
-WARN_THRESHOLD=4                            # this many players or fewer = short
+WARN_THRESHOLD=4
 WARN_SECONDS_SHORT=30
 WARN_SECONDS_LONG=90
-FINAL_WARN_SECONDS=30                       # second warning at this many seconds
-                                            # left; skipped if the window is
-                                            # already this short or shorter
+FINAL_WARN_SECONDS=30
 
-BOOT_TIMEOUT=300                            # max seconds to wait after a restart
-COLD_BOOT_TIMEOUT=180                       # max seconds when starting from stopped
-POLL_INTERVAL=10                            # how often to check during boot
-MODCHECK_WAIT=45                            # seconds to wait for async verdict
+BOOT_TIMEOUT=300
+COLD_BOOT_TIMEOUT=180
+POLL_INTERVAL=10
+MODCHECK_WAIT=45
 
-LOG=/root/pz-caretaking.log
-LOG_KEEP_HOURS=48                           # drop log lines older than this
-LOCK=/root/pz-caretaking.lock
+LOG=/root/pz-caretaking.log            # Change as needed
+LOG_KEEP_HOURS=48
+LOCK=/root/pz-caretaking.lock          # Change as needed
 
-# Pattern that means "mods are stale" in the server console. Verify this
-# against your own logs the first time — see NOTES at the bottom.
 STALE_PATTERN='need update'
 FRESH_PATTERN='mods updated'
-
-# ------------------------------------------------------------- plumbing ----
 
 DRY_RUN=false
 FORCE=false
@@ -91,7 +54,6 @@ done
 log() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG"; }
 die() { log "FATAL: $*"; exit 1; }
 
-# Only one instance at a time — a restart cycle can run 20+ minutes.
 exec 9>"$LOCK"
 flock -n 9 || { log "another run is in progress; exiting"; exit 0; }
 
@@ -101,8 +63,6 @@ RCON_PASS="$(<"$RCON_PASS_FILE")"
 
 command -v python3 >/dev/null || die "python3 not installed in this container"
 command -v docker  >/dev/null || die "docker CLI not found"
-
-# ----------------------------------------------------------- rcon client ----
 
 RCON_PY="$(mktemp /tmp/pzrcon.XXXXXX.py)"
 trap 'rm -f "$RCON_PY"' EXIT
@@ -147,7 +107,6 @@ def main():
     with sock:
         sock.sendall(encode(1, SERVERDATA_AUTH, password))
         reply = decode(sock)
-        # PZ may emit an empty SERVERDATA_RESPONSE_VALUE before the auth reply
         if reply and reply[1] == 0:
             reply = decode(sock)
         if not reply or reply[0] == -1:
@@ -163,7 +122,7 @@ def main():
             if pkt is None:
                 break
             out.append(pkt[2])
-            if len(pkt[2]) < 3700:      # short packet == end of response
+            if len(pkt[2]) < 3700:
                 break
         print(''.join(out).strip())
     return 0
@@ -175,13 +134,9 @@ rcon() {
   python3 "$RCON_PY" "$RCON_HOST" "$RCON_PORT" "$RCON_PASS" "$1" 2>>"$LOG"
 }
 
-# -------------------------------------------------------------- helpers ----
-
-# Number of connected players, or -1 if the query failed.
 player_count() {
   local out n
   out="$(rcon 'players')" || { echo -1; return; }
-  # Expected shape: "Players connected (3): \n-alice\n-bob\n-carol"
   n="$(sed -n 's/.*connected[^(]*(\([0-9]\+\)).*/\1/p' <<<"$out" | head -1)"
   if [[ -z "$n" ]]; then
     n="$(grep -c '^[[:space:]]*-' <<<"$out")"
@@ -212,8 +167,6 @@ in_quiet_hours() {
   (( h >= QUIET_START && h < QUIET_END ))
 }
 
-# Fires checkModsNeedUpdate, waits, then reads the verdict out of the
-# container log. Echoes: stale | fresh | unknown
 mods_are_stale() {
   local since_marker verdict
   since_marker="$(( MODCHECK_WAIT + 15 ))s"
@@ -240,12 +193,10 @@ wait_for_world() {
   log "waiting for the world to come up (timeout ${timeout}s)..."
   while (( waited < timeout )); do
     sleep "$POLL_INTERVAL"; waited=$(( waited + POLL_INTERVAL ))
-    # If the container fell over there is no point burning the whole timeout.
     if ! container_running; then
       log "ERROR: container '$CONTAINER' is no longer running (${waited}s in)"
       return 1
     fi
-    # RCON only answers once the server is fully up, so this is the real signal.
     if [[ "$(player_count)" != "-1" ]]; then
       log "server is up and RCON is answering (${waited}s)"
       return 0
@@ -255,11 +206,6 @@ wait_for_world() {
   return 1
 }
 
-# Drop log lines older than LOG_KEEP_HOURS. Rewrites the file in place rather
-# than mv'ing a temp over it — cron holds this path open in append mode for the
-# duration of the run, and replacing the inode would send the rest of this
-# run's stderr to a deleted file. Untimestamped lines (cron-captured stderr,
-# python tracebacks) inherit the keep/drop decision of the stamped line above.
 trim_log() {
   [[ -f "$LOG" && -w "$LOG" ]] || return 0
   local cutoff
@@ -287,8 +233,6 @@ housekeeping() {
     log "docker image prune: ${freed:-nothing reclaimed}"
   fi
 }
-
-# ------------------------------------------------------------------ main ----
 
 trim_log
 log "=== run start (dry_run=$DRY_RUN force=$FORCE) ==="
@@ -325,9 +269,6 @@ if [[ "$STATUS_ONLY" == true ]]; then
   exit 0
 fi
 
-# A cold start already ran SteamCMD with UPDATE_ON_START=true, so the mods are
-# current by definition. Restarting again — including under --force — would
-# just bounce a server that came up 90 seconds ago.
 if [[ "$COLD_START" == true ]]; then
   log "cold start complete; mods were updated on boot, no restart needed"
   housekeeping
@@ -357,7 +298,6 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
-# --- warn ---
 if (( PLAYERS > 0 )); then
   WARN="$(warn_seconds "$PLAYERS")"
   msg="Server restarting in ${WARN} seconds for mod updates — get somewhere safe."
@@ -378,7 +318,6 @@ else
   log "nobody online; restarting immediately"
 fi
 
-# --- save and quit ---
 log "saving world"
 rcon 'save' >/dev/null
 sleep 15
@@ -387,7 +326,6 @@ log "issuing quit"
 rcon 'quit' >/dev/null
 sleep 10
 
-# --- verify and tidy ---
 if wait_for_world; then
   housekeeping
   log "=== run complete: restarted successfully ==="
