@@ -1,3 +1,17 @@
+# ==============================================================================
+# Script Name: refetch.sh
+# Description: Forces a clean redownload of a specific Project Zomboid Workshop 
+#              mod by purging its downloaded directory and dynamically removing 
+#              its entry from the SteamCMD appworkshop manifest (.acf).
+#
+# Usage: 
+#   ./refetch.sh <workshop-id> [--dry-run]
+#
+# Options:
+#   <workshop-id>  (Required) The numeric Steam Workshop ID of the mod to purge.
+#   --dry-run      Show which lines in the manifest would be deleted, without 
+#                  modifying files or deleting the content directory.
+# ==============================================================================
 #!/usr/bin/env bash
 
 set -uo pipefail
