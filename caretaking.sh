@@ -1,7 +1,16 @@
-# Script coded by Scottish Haze aka ThatJeffGuy on Github.
-# Code ran through Cwen3 for verification of structure.
-# All code posted has successfully run on a prod game server without issues!
-# Please post bugs on the github.
+# ==============================================================================
+# Script Name: pz-caretaking.sh
+# Description: Automated maintenance and restart manager for a Dockerized 
+#              Project Zomboid server. Monitors player counts, checks for 
+#              stale mods via RCON, enforces quiet hours, and handles graceful 
+#              server reboots with automated in-game warnings.
+#
+# Options:
+#   --dry-run   Simulate the process (log actions, calculate warnings) without 
+#               actually executing Docker or RCON restart commands.
+#   --force     Bypass the mod freshness check and force a server restart.
+#   --status    Print the current container state and mod update status, then exit.
+# ==============================================================================
 
 #!/usr/bin/env bash
 
