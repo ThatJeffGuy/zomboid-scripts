@@ -1,3 +1,17 @@
+# ==============================================================================
+# Script Name: genmods.sh
+# Description: Scans installed Steam Workshop content and reads mod.info files 
+#              to automatically generate a valid, ordered 'Mods=' string. 
+#              Filters items based on hardcoded allowlists and denylists, and 
+#              sorts mods into load-order tiers to prevent conflicts.
+#
+# Usage:
+#   ./genmods.sh [CONTENT_DIR]
+#
+# Arguments:
+#   CONTENT_DIR    (Optional) Path to the Workshop content folder. 
+#                  Defaults to /project-zomboid/steamapps/workshop/content/108600.
+# ==============================================================================
 #!/usr/bin/env bash
 
 set -uo pipefail
