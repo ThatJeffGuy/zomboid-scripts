@@ -1,3 +1,13 @@
+# ==============================================================================
+# Script Name: caselinks.sh
+# Description: Resolves Linux case-sensitivity issues for Project Zomboid mods 
+#              by recursively scanning Workshop directories and creating lowercase 
+#              symlinks for critical animation/actiongroup folders.
+#
+# Options:
+#   --dry-run   Scan and report which symlinks would be created or failed, 
+#               without modifying the filesystem.
+# ==============================================================================
 #!/usr/bin/env bash
 
 set -uo pipefail
