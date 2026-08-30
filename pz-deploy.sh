@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
-# pz-deploy.sh — write Mods= and WorkshopItems= into the server ini, restart, verify.
-# Run inside LXC 201.   ./pz-deploy.sh        apply
-#                       ./pz-deploy.sh -n     dry run, changes nothing
 set -uo pipefail
 
-INI="/opt/app/zomboid/config/Server/Wubcord_Playground.ini"
+INI="/opt/app/zomboid/config/Server/Your_Server_Name.ini"
 CONTAINER=zomboid-server
 DRY=false
 [[ "${1:-}" == "-n" || "${1:-}" == "--dry-run" ]] && DRY=true
 
-# Heredocs (not quotes) because some mod ids contain apostrophes.
 MODS=$(cat <<'MODS_EOF'
 ETO_B;PROJECTRVInterior42;ChuckleberryFinnAlertSystem;errorMagnifier;tsarslib;MoodleFramework;NeatUI_Framework;ContextMenuIconsCore;daneLibrary;StarlitLibrary;WoodysLib;KATTAJ1_ClothesCore;SWMG;UnifiedCarryWeightFramework;ModManager;ModFolders;AP;FH;SPNCC;SPNCCDetails;SPNCCFaces;HBTacReload;HBVCEFb42;MultipleGeneratorsB42;KAMER_WallHealth;AatheomEMVFSM;AlicesMultiWearVanilla;alicesWeaponSling;alicesWeaponSlingRadialMenu;ATA_Bus;B42PackMule;bdtmre;BetterFlashlightsFixed;BusStopFastTravel;Buttstroke;campintherain;ComputerModkum;CyesPushDoors;DBFaster50;DELRAN_CLICK_TO_WEAR;dustinguished_bolt_cutters;dustinguished_cleaning_wipes;DynamicVehicleSnow;EFTBP;equipwhilerunning;FenceSheets;FunctionalAppliances2;FunctionalGutters;FWOBenchPressTreadmill;FWOFitnessWorkoutOverhaul;GanydeBielovzki's Frockin Shirts n Ties;GanydeBielovzki's Frockin Splendor!;GanydeBielovzki's Frockin Splendor! Vol.2;GanydeBielovzki's Frockin Splendor! Vol.3;GanydeBielovzki's Frockin Splendor! Vol.4;GanydeBielovzki's Frockin Splendor! Vol.5;GanydeBielovzki's Frockin Stompers!;GanydeBielovzki's Frockin Wiseguys;GasPumpIndicator;HandCrankFlashlights;HereGoesTheSun;hf_point_blank;HGOEXP;IMWSEnergyDrinksNEW;KAMER_RepairWall;KATTAJ1_Military;Ladders4220;LongTermPreservationExtended;LongTermPreservationExtendedUI;MoreDamagedObjects;N&CsNarcotics;NepHighBeams;NewMusic;OpenAllContainers;PlayerDogTags42;ProjectArcade;PropaneExchangeCabinet;PSR;RebalancedPropMoving;RepairableWindows;RepairAnyClothes;ResearchLabInternProfession;RetroDashboard;RET_LethalStealth;rSemiTruck;ServingPlates42;SmokingSoundsOverhaul;SomewhatWater;stanks_suicide;Swatpack_by_Slobodskoy;TaillightsAndStoplights;TheOnlyCure;ThisIsYourLife;TLOULevelUpSound;TotalWeightRebalance;Tuna_GunRacks;Tuna_MultiVHS;Tuna_VHS_Collector;VanillaFoodsExpanded;VanillaOutfitsExpanded;VB_CommonSense;Waterpipes;WoodysRainAndWetSnowCleaning;WubcordBus;ZeroWeightKeys_B42;ZVirusVaccine42BETA;MultipleGeneratorsB42Patch;BlackPowderGunsmithing;MarzVanillaGuns;GunsOfMarz;HBAC;SpnHair;SPNRetexture;SPNRetextureUnderwear;SPNRetextureZombie;SPNRetextureZombieUnderwear;FixedLightOnBeltAF;EvolvingTraitsWorld;EvolvingTraitsWorldTraitSandbox;CleanUI;CleanHotBar;Neat_Building;Neat_Building_Railings;Neat_Crafting;Project_Cook;Project_Cook_Pixel_Icon_Pack;TheShortcut;SmarterStorage;P4PickingMeister;P4TidyUpMeister;P4VideoMeister;N3WOMapOverhaul;PZ_Map;AMMS_Standalone;Briefing;B42MoodleDescriptionsExpanded;VHSSkillNameInTooltip;SkillJournal;ExactMinuteClock;CombatText;KillCount;P4HasBeenRead;HideEquippedItems;SwapIt;P4AlarmSyndrome;SimpleContextMenuIcons;NeatUI_Equipment;ProximityInventory;ModLoadOrderSorter_b42
 MODS_EOF
