@@ -2,7 +2,6 @@
 #
 # pz-caretaking.sh — Wubcord Project Zomboid mod-update watcher
 #
-# Runs INSIDE LXC 201. Touches nothing outside this container.
 # Every hour:
 #   1. Asks the PZ server over RCON whether its Workshop mods are stale
 #   2. If so, warns connected players, then waits out the warning window
@@ -15,7 +14,7 @@
 # If the container is stopped when the script fires, it starts it, waits for
 # the world, and exits — no restart, since a cold start updates mods already.
 #
-# Cron (inside LXC 201, `crontab -e` as root):
+# Cron (inside LXC, `crontab -e` as root):
 #   10 * * * * /root/pz-caretaking.sh >/dev/null 2>>/root/pz-caretaking.log
 #
 # log() already tees into the log file, so stdout goes to /dev/null; the 2>>
