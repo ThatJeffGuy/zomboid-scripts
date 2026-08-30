@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: deploy.sh
 # Description: Automates the injection of predefined 'Mods=' and 'WorkshopItems=' 
@@ -9,7 +10,6 @@
 #   -n, --dry-run  Print out what would happen without stopping the container 
 #                  or modifying the .ini file.
 # ==============================================================================
-#!/usr/bin/env bash
 set -uo pipefail
 
 INI="/opt/app/zomboid/config/Server/Your_Server_Name.ini"
