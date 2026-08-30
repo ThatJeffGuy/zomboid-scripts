@@ -1,17 +1,4 @@
 #!/usr/bin/env bash
-# pz-refetch.sh — force SteamCMD to re-download ONE Workshop item.
-#
-# Deletes the item's content folder and removes its entries from
-# appworkshop_108600.acf, leaving every other mod untouched. The next server
-# start (UPDATE_ON_START=true) fetches just that item.
-#
-# Run with the server STOPPED.
-#
-#   ./pz-refetch.sh 3722134990
-#   ./pz-refetch.sh 3722134990 --dry-run
-#
-# Inside the container:
-#   docker exec -i zomboid-server bash -s -- 3722134990 < pz-refetch.sh
 
 set -uo pipefail
 
@@ -58,7 +45,6 @@ i = 0
 while i < len(lines):
     if lines[i].strip() == '"%s"' % wsid:
         depth = 0; j = i + 1
-        # the block opens with a { on the next non-empty line
         while j < len(lines) and '{' not in lines[j]:
             j += 1
         start = i
