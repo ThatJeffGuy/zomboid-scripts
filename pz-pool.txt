@@ -17,7 +17,7 @@
 #   - Non-numeric characters in the weight field are stripped; a missing or
 #     zero weight is treated as 1.
 #
-# 245 items / total weight 8208
+# 245 items / total weight 8222
 # ==============================================================================
 
 # --- COMMON: BASIC SURVIVAL, CONSUMABLES & HARDWARE (Weight: 60) ---
@@ -233,6 +233,10 @@ Base.FlameTrap|Flame Trap|10
 Base.SmokeBomb|Smoke Bomb|10
 Base.Aerosolbomb|Aerosol Bomb|10
 
+# Off-tier: kept obtainable as core utility items rather than trophies.
+Base.Sledgehammer|Sledgehammer|8
+Base.Bag_ALICEpack_Army|ALICE Pack|8
+
 # --- VERY RARE: FIREARMS, HEAVY ARMOR & MILITARY GEAR (Weight: 5) ---
 Base.Pistol|M9 Pistol|5
 Base.Pistol2|M1911 Pistol|5
@@ -266,11 +270,9 @@ Base.ChokeTubeImproved|Improved Choke Tube|5
 Base.RecoilPad|Recoil Pad|5
 
 # --- ULTRA RARE: HIGH-VALUE ENDGAME EXCLUSIVES (Weight: 1) ---
-Base.Katana|Masterwork Katana|1
-Base.Machete|Pristine Machete|1
-Base.AssaultRifle|Custom M16 Rifle|1
-Base.Vest_BulletArmy|Heavy Duty Army Vest|1
-Base.Sledgehammer|Heavy Duty Sledgehammer|1
-Base.Generator|Portable Generator|1
+Base.Katana|Katana|1
+Base.Machete|Machete|1
+Base.AssaultRifle|M16 Assault Rifle|1
+Base.Vest_BulletArmy|Military Bulletproof Vest|1
+Base.Generator|Electric Generator|1
 Base.Bag_SurvivorBag|Survivor Backpack|1
-Base.Bag_ALICEpack_Army|Military ALICE Pack|1
