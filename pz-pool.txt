@@ -1,6 +1,23 @@
 # ==============================================================================
-# PZ SUPPLY DROP ITEM POOL (250 Selected Items)
-# Format: ItemID|Display Name|Weight
+# PZ SUPPLY DROP ITEM POOL
+# ==============================================================================
+# Format:  ItemID|Display Name|Weight
+#
+#   ItemID       Exact Project Zomboid item ID, e.g. Base.Katana. This is what
+#                actually gets spawned. Verify with: ./supplydrop.sh --verify <Player>
+#   Display Name Cosmetic label used in broadcasts only. It does NOT change the
+#                item that spawns.
+#   Weight       Relative selection weight. Higher = more common. Values are
+#                relative to the pool total, not percentages.
+#
+# RULES:
+#   - Item IDs must be UNIQUE across the whole file. A duplicated ID rolls once
+#     per line and its weights stack, so the rarer entry is silently shadowed.
+#   - Lines beginning with # and blank lines are ignored.
+#   - Non-numeric characters in the weight field are stripped; a missing or
+#     zero weight is treated as 1.
+#
+# 245 items / total weight 8208
 # ==============================================================================
 
 # --- COMMON: BASIC SURVIVAL, CONSUMABLES & HARDWARE (Weight: 60) ---
@@ -134,7 +151,6 @@ Base.Axe|Axe|25
 Base.HandAxe|Hand Axe|25
 Base.WoodAxe|Wood Axe|25
 Base.ClubHammer|Club Hammer|25
-Base.Sledgehammer|Sledgehammer|25
 Base.Shovel|Shovel|25
 Base.HandShovel|Trowel|25
 Base.GardenFork|Garden Fork|25
@@ -173,7 +189,6 @@ Base.Pants_ArmyCamoGreen|Army Camo Pants|25
 Base.Jacket_Police|Police Jacket|25
 Base.Pants_Police|Police Officer Pants|25
 Base.HolsterDouble|Double Holster|25
-Base.Bag_ALICEpack_Army|ALICE Pack|25
 Base.Bag_DuffelBag|Duffel Bag|25
 Base.Bag_BigHikingBag|Big Hiking Bag|25
 Base.Bag_NormalHikingBag|Hiking Bag|25
@@ -195,8 +210,6 @@ Base.Bullets9mm|9mm Rounds|10
 Base.Bullets45|.45 Auto Rounds|10
 Base.ShotgunShells|Shotgun Shells|10
 Base.HolsterSimple|Holster|10
-Base.Machete|Machete|10
-Base.Katana|Katana|10
 Base.SpearCrafted|Crafted Spear|10
 Base.BaseballBat|Baseball Bat|10
 Base.BaseballBatNails|Spiked Baseball Bat|10
@@ -213,7 +226,6 @@ Base.Scalpel|Scalpel|10
 Base.Splint|Splint|10
 Base.Morphine|Morphine|10
 Base.Antibiotics|Antibiotics|10
-Base.Generator|Electric Generator|10
 Base.GunPowder|Gunpowder|10
 Base.PipeBomb|Pipe Bomb|10
 Base.Molotov|Molotov Cocktail|10
@@ -228,10 +240,8 @@ Base.Pistol3|Desert Eagle|5
 Base.Revolver_Short|Magnum Revolver|5
 Base.Shotgun|JS-2000 Shotgun|5
 Base.DoubleBarrelShotgun|Double Barrel Shotgun|5
-Base.AssaultRifle|M16 Assault Rifle|5
 Base.VarmintRifle|M733 Rifle|5
 Base.Vest_BulletPolice|Police Bulletproof Vest|5
-Base.Vest_BulletArmy|Military Bulletproof Vest|5
 Base.Vest_BulletCivilian|Civilian Bulletproof Vest|5
 Base.Hat_Police|Police Officer Hat|5
 Base.Hat_Army|Military Helmet|5
