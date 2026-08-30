@@ -20,7 +20,7 @@ Automated reboot logic that checks player activity before initiating server upda
 
 ---
 
-### Supply Drops (`supply_drop.sh`)
+### Supply Drops (`supplydrop.sh`)
 An automated event script that delivers weighted loot directly to active players. Designed to run as an hourly cron job.
 
 * **RNG Loot Distribution:** Rolls a hidden number (1–1000) for every active user, followed by 3 secondary rolls matching item IDs in `pz-pool.txt`.
