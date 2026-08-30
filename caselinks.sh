@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # ==============================================================================
 # Script Name: caselinks.sh
 # Description: Resolves Linux case-sensitivity issues for Project Zomboid mods 
@@ -8,7 +9,6 @@
 #   --dry-run   Scan and report which symlinks would be created or failed, 
 #               without modifying the filesystem.
 # ==============================================================================
-#!/usr/bin/env bash
 
 set -uo pipefail
 
