@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# pz-caselinks.sh — add lowercase symlink aliases for mod media folders whose
-# names PZ looks up in lowercase on case-sensitive filesystems (Linux).
-#
-# Adds, never renames or deletes. Safe to re-run. Re-run after mod updates,
-# since Workshop content is replaced on update.
-#
-#   docker exec -i zomboid-server bash -s -- --dry-run < pz-caselinks.sh
-#   docker exec -i zomboid-server bash -s              < pz-caselinks.sh
 
 set -uo pipefail
 
@@ -16,7 +8,6 @@ DRY=false
 CONTENT=/project-zomboid/steamapps/workshop/content/108600
 [[ -d "$CONTENT" ]] || { echo "not found: $CONTENT" >&2; exit 1; }
 
-# Folder names PZ sometimes requests in lowercase.
 NAMES="AnimSets actiongroups ActionGroups AnimNodes"
 
 made=0; existed=0; skipped=0
@@ -26,7 +17,7 @@ while IFS= read -r dir; do
   parent="$(dirname "$dir")"
   lower="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
 
-  [[ "$lower" == "$base" ]] && continue           # already lowercase
+  [[ "$lower" == "$base" ]] && continue
   target="$parent/$lower"
 
   if [[ -e "$target" || -L "$target" ]]; then
