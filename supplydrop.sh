@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
-# pz-supplydrop.sh — random weighted supply drop for all connected players.
-# Needs only the `rcon` binary you already have, plus a pool file.
-#
-#   ./pz-supplydrop.sh              run a drop
-#   ./pz-supplydrop.sh --dry-run    show what it would do, send nothing
-#   ./pz-supplydrop.sh --odds 2000  simulate 2000 rolls, print tier stats, send nothing
-#   ./pz-supplydrop.sh --verify Jeff  send every pool item to one player (bad-ID check)
 
 set -uo pipefail
 
-RCON=rcon                          # or full path
-POOL=/root/pz-pool.txt             # ID|Display Name|weight
-LOG=/root/pz-supplydrop.log        # cron appends here; trimmed to LOG_KEEP_HOURS
-LOG_KEEP_HOURS=48                  # drop log lines older than this
-MAX_ITEMS=3                        # each player gets 1..MAX_ITEMS, one of each
-DELAY=1                            # seconds between rcon calls
-ANNOUNCE=1                         # 1 = broadcast the drop event, 0 = silent
-ANNOUNCE_ITEMS=0                   # 1 = also broadcast who got what, 0 = don't
-                                   # (the loot is still recorded in the log)
+RCON=rcon
+POOL=/root/pz-pool.txt
+LOG=/root/pz-supplydrop.log
+LOG_KEEP_HOURS=48
+MAX_ITEMS=3
+DELAY=1
+ANNOUNCE=1
+ANNOUNCE_ITEMS=0
 
 ANNOUNCE_MESSAGES=(
   "A plane is seen smoking and shedding parts. You race to grab the items that fell nearby."
@@ -30,11 +22,6 @@ ANNOUNCE_MESSAGES=(
 pzrcon() { command "$RCON" "$1" 2>&1; }
 log()    { echo "$(date '+%F %T') $*"; }
 
-# Drop log lines older than LOG_KEEP_HOURS. Rewrites the file in place rather
-# than mv'ing a temp over it — cron holds this path open in append mode for the
-# duration of the run, and replacing the inode would send the rest of this
-# run's output to a deleted file. Untimestamped lines inherit the keep/drop
-# decision of the stamped line above them, so multi-line rcon errors stay put.
 trim_log() {
   [[ -f "$LOG" && -w "$LOG" ]] || return 0
   local cutoff
@@ -74,7 +61,6 @@ roll() {
       split($0, a, "|")
       if (length(a[1]) == 0) next
       
-      # Clean weight: strip non-digits and force numeric
       gsub(/[^0-9]/, "", a[3])
       w = a[3] + 0
       if (w <= 0) w = 1
@@ -82,10 +68,8 @@ roll() {
       u = rand()
       if (u <= 0) u = 1e-9
       
-      # Calculate key for weighted reservoir sampling
       key = -log(u) / w
       
-      # Format key with leading zeros for reliable numeric sorting
       printf "%018.9f\t%s\t%s\n", key, a[1], a[2]
     }' | sort -k1,1n | awk -F'\t' -v n="$n" '
     BEGIN { count = 0 }
@@ -98,7 +82,6 @@ roll() {
     }'
 }
 
-# ---- odds simulator ---------------------------------------------------------
 if [[ "$ODDS" -gt 0 ]]; then
   echo "Simulating $ODDS single-item rolls..."
   printf '%s\n' "${ITEMS[@]}" | awk -v iterations="$ODDS" -v seed="$RANDOM$$" '
@@ -140,7 +123,6 @@ if [[ "$ODDS" -gt 0 ]]; then
   exit 0
 fi
 
-# ---- verify mode ------------------------------------------------------------
 if [[ -n "$VERIFY" ]]; then
   log "Verifying ${#ITEMS[@]} item IDs against $VERIFY — this will flood their inventory"
   bad=0
@@ -154,7 +136,6 @@ if [[ -n "$VERIFY" ]]; then
   exit 0
 fi
 
-# ---- random interval gate ---------------------------------------------------
 STATE=/root/.pz-supplydrop-next
 MIN_HOURS=2
 MAX_HOURS=6
@@ -182,11 +163,9 @@ if [[ $DRY -eq 0 && -z "$VERIFY" ]]; then
   fi
 fi
 
-# ---- who's online? ----------------------------------------------------------
 raw="$(pzrcon 'players')"
 [[ -z "$raw" ]] && { log "RCON returned nothing — is the server up?"; exit 1; }
 
-# Carefully strip leading whitespace/hyphens while preserving exact username formatting
 mapfile -t PLAYERS < <(printf '%s\n' "$raw" | grep -E '^[[:space:]]*-' | sed 's/^[[:space:]]*-[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
 if [[ ${#PLAYERS[@]} -eq 0 ]]; then log "No players connected — no drop."; exit 0; fi
