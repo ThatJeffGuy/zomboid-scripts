@@ -1,0 +1,266 @@
+# ==============================================================================
+# PZ SUPPLY DROP ITEM POOL (250 Selected Items)
+# Format: ItemID|Display Name|Weight
+# ==============================================================================
+
+# --- COMMON: BASIC SURVIVAL, CONSUMABLES & HARDWARE (Weight: 60) ---
+Base.Battery|Battery|60
+Base.Torch|Flashlight|60
+Base.HandTorch|Penlight|60
+Base.Matches|Matches|60
+Base.Lighter|Lighter|60
+Base.WaterBottleFull|Water Bottle|60
+Base.Bandage|Bandage|60
+Base.CottonBalls|Cotton Balls|60
+Base.AlcoholWipes|Alcohol Wipes|60
+Base.Disinfectant|Disinfectant|60
+Base.Pills|Painkillers|60
+Base.PillsAntiDep|Antidepressants|60
+Base.PillsBeta|Beta Blockers|60
+Base.PillsSleepingTablets|Sleeping Tablets|60
+Base.PillsVitamins|Vitamins|60
+Base.TinnedBeans|Canned Beans|60
+Base.CannedSoup|Canned Soup|60
+Base.TunaTin|Canned Tuna|60
+Base.Pop3|Soda|60
+Base.BeefJerk|Beef Jerky|60
+Base.Thread|Thread|60
+Base.Needle|Needle|60
+Base.DuctTape|Duct Tape|60
+Base.Glue|Glue|60
+Base.Scotchtape|Scotch Tape|60
+Base.Twine|Twine|60
+Base.Rope|Rope|60
+Base.NailsBox|Box of Nails|60
+Base.ScrewsBox|Box of Screws|60
+Base.Garbagebag|Garbage Bag|60
+Base.KnapsackSprayer|Knapsack Sprayer|60
+Base.KnapsackSprayer_Stowed|Knapsack Sprayer (Stowed)|60
+Base.Hat_DustMask|Dust Mask|60
+Base.Hat_Bandana|Bandana|60
+Base.Hat_BandanaMask|Bandana Mask|60
+Base.Gloves_LeatherGloves|Leather Gloves|60
+Base.Belt2|Belt|60
+Base.Glasses_Aviators|Aviator Sunglasses|60
+Base.Glasses_Prescription_JackieO|Prescription Glasses|60
+Base.Glasses_JackieO|Jackie O Sunglasses|60
+Base.Tissue|Tissues|60
+Base.ToiletPaper|Toilet Paper|60
+Base.Soap|Bar of Soap|60
+Base.BurlapSack|Sack|60
+Base.Paperclip|Paperclip|60
+Base.RubberBand|Rubber Band|60
+Base.Razor|Razor|60
+Base.Comb|Comb|60
+Base.Toothbrush|Toothbrush|60
+Base.Toothpaste|Toothpaste|60
+Base.CannedPeaches|Canned Peaches|60
+Base.CannedPineapple|Canned Pineapple|60
+Base.CannedCornedBeef|Canned Corned Beef|60
+Base.CannedChili|Canned Chili|60
+Base.CannedBolognese|Canned Spaghetti|60
+Base.CannedPeas|Canned Peas|60
+Base.CannedCorn|Canned Corn|60
+Base.Dogfood|Dog Food|60
+Base.Cereal|Cereal|60
+Base.Crisps|Potato Chips|60
+Base.Crisps2|Tortilla Chips|60
+Base.Crisps3|Pretzels|60
+Base.Chocolate|Chocolate Bar|60
+Base.GranolaBar|Granola Bar|60
+Base.PeanutButter|Peanut Butter|60
+Base.Pop|Orange Soda|60
+Base.Pop2|Lime Soda|60
+Base.WaterBottleEmpty|Empty Water Bottle|60
+Base.Plank|Wooden Plank|60
+Base.Log|Log|60
+Base.Sheet|Torn Sheet|60
+Base.Socks_Ankle|Ankle Socks|60
+Base.Tshirt_White|White T-Shirt|60
+Base.Tshirt_DefaultDE|Blue T-Shirt|60
+Base.Tshirt_DefaultTEX|Red T-Shirt|60
+Base.Shirt_FormalWhite|White Dress Shirt|60
+Base.Socks_Long|Long Socks|60
+Base.Shoes_Trainer|Sneakers|60
+Base.Shoes_Black|Black Shoes|60
+Base.Pants_White|White Pants|60
+Base.Pants_Jean1|Jeans|60
+Base.Shorts_ShortDefault|Shorts|60
+Base.Hat_PeakedCapArmy|Army Peaked Cap|25
+Base.Earplugs|Earplugs|60
+Base.Notebook|Notebook|60
+Base.Journal|Journal|60
+Base.SheetPaper|Sheet of Paper|60
+Base.Pen|Black Pen|60
+Base.Pencil|Pencil|60
+Base.RedPen|Red Pen|60
+Base.BluePen|Blue Pen|60
+Base.Crayon|Crayon|60
+Base.Eraser|Eraser|60
+Base.Map|Map|60
+Base.CardDeck|Deck of Cards|60
+Base.Dice|Dice|60
+Base.Checkers|Checkers Set|60
+Base.ChessSet|Chess Set|60
+Base.Locket|Locket|60
+
+# --- UNCOMMON: TOOLS, CLOTHING, GEAR & MID-TIER ITEMS (Weight: 25) ---
+Base.CanOpener|Can Opener|25
+Base.Hammer|Hammer|25
+Base.Screwdriver|Screwdriver|25
+Base.Saw|Saw|25
+Base.Crowbar|Crowbar|25
+Base.PipeWrench|Pipe Wrench|25
+Base.Wrench|Wrench|25
+Base.Scissors|Scissors|25
+Base.SewingKit|Sewing Kit|25
+Base.FirstAidKit|First Aid Kit|25
+Base.Hat_BalaclavaFull|Full Balaclava|25
+Base.Hat_BalaclavaFace|Open Balaclava|25
+Base.Hat_BeretArmy|Army Beret|25
+Base.Hat_BonnieHat|Boonie Hat|25
+Base.Hat_BonnieHat_CamoGreen|Camo Boonie Hat|25
+Base.Hat_BonnieHat_OliveDrab|Olive Boonie Hat|25
+Base.Hat_BonnieHat_DesertCamoNew|Desert Camo Boonie Hat|25
+Base.Hat_BonnieHat_MiliusCamo|Milius Camo Boonie Hat|25
+Base.Hat_BaseballCapArmy|Army Cap|25
+Base.Hat_BaseballCap_HuntingCamo|Camo Hunting Cap|25
+Base.Hat_BaseballCap_Police|Police Cap|25
+Base.Hat_BaseballCap_Sheriff|Sheriff Cap|25
+Base.Hat_BaseballCap_SWAT|SWAT Cap|25
+Base.Hat_BaseballCap_FireDept|Fire Dept Cap|25
+Base.Gloves_BoneGloves|Fingerless Gloves|25
+Base.Axe|Axe|25
+Base.HandAxe|Hand Axe|25
+Base.WoodAxe|Wood Axe|25
+Base.ClubHammer|Club Hammer|25
+Base.Sledgehammer|Sledgehammer|25
+Base.Shovel|Shovel|25
+Base.HandShovel|Trowel|25
+Base.GardenFork|Garden Fork|25
+Base.GardenHoe|Garden Hoe|25
+Base.WateringCan|Watering Can|25
+Base.Wire|Wire|25
+Base.BarbedWire|Barbed Wire|25
+Base.UnlitTorch|Flashlight (Unlit)|25
+Base.WeldingMask|Welding Mask|25
+Base.BlowTorch|Propane Torch|25
+Base.PropaneTank|Propane Tank|25
+Base.Paintbrush|Paintbrush|25
+Base.PlasterBag|Bag of Plaster|25
+Base.ConcreteBag|Bag of Concrete|25
+Base.GloveCompartment|Car Glovebox|25
+Base.CarBattery1|Standard Car Battery|25
+Base.Tire1|Standard Car Tire|25
+Base.PetrolCan|Gas Can|25
+Base.Jack|Car Jack|25
+Base.LugWrench|Lug Wrench|25
+Base.TirePump|Tire Pump|25
+Base.Extinguisher|Fire Extinguisher|25
+Base.RadioReceiver|Ham Radio|25
+Base.WalkieTalkie4|Military Walkie Talkie|25
+Base.Hat_CrashHelmet|Motorcycle Helmet|25
+Base.Hat_HardHat|Hard Hat|25
+Base.Hat_GasMask|Gas Mask|25
+Base.Hat_Fireman|Fireman Helmet|25
+Base.Jacket_Fireman|Fireman Jacket|25
+Base.Pants_Fireman|Fireman Pants|25
+Base.Shoes_ArmyBoots|Military Boots|25
+Base.Shoes_WorkBoots|Work Boots|25
+Base.Vest_Default|Vest|25
+Base.Jacket_ArmyCamoGreen|Army Camo Jacket|25
+Base.Pants_ArmyCamoGreen|Army Camo Pants|25
+Base.Jacket_Police|Police Jacket|25
+Base.Pants_Police|Police Officer Pants|25
+Base.HolsterDouble|Double Holster|25
+Base.Bag_ALICEpack_Army|ALICE Pack|25
+Base.Bag_DuffelBag|Duffel Bag|25
+Base.Bag_BigHikingBag|Big Hiking Bag|25
+Base.Bag_NormalHikingBag|Hiking Bag|25
+Base.Bag_Schoolbag|Schoolbag|25
+
+# --- RARE: AMMO, WEAPONS & MEDICAL SUPPLIES (Weight: 10) ---
+Base.HuntingKnife|Hunting Knife|10
+Base.KitchenKnife|Kitchen Knife|10
+Base.PocketKnife|Pocket Knife|10
+Base.Bullets9mmBox|Box of 9mm Bullets|10
+Base.Bullets45Box|Box of .45 Auto Bullets|10
+Base.Bullets44Box|Box of .44 Magnum Bullets|10
+Base.Bullets38Box|Box of .38 Special Bullets|10
+Base.223Box|Box of .223 Bullets|10
+Base.556Box|Box of 5.56mm Bullets|10
+Base.ShotgunShellsBox|Box of Shotgun Shells|10
+Base.308Box|Box of .308 Bullets|10
+Base.Bullets9mm|9mm Rounds|10
+Base.Bullets45|.45 Auto Rounds|10
+Base.ShotgunShells|Shotgun Shells|10
+Base.HolsterSimple|Holster|10
+Base.Machete|Machete|10
+Base.Katana|Katana|10
+Base.SpearCrafted|Crafted Spear|10
+Base.BaseballBat|Baseball Bat|10
+Base.BaseballBatNails|Spiked Baseball Bat|10
+Base.LeadPipe|Lead Pipe|10
+Base.IronRod|Iron Rod|10
+Base.GolfClub|Golf Club|10
+Base.Nightstick|Nightstick|10
+Base.SpearHuntingKnife|Spear with Hunting Knife|10
+Base.SpearMachete|Spear with Machete|10
+Base.SutureNeedle|Suture Needle|10
+Base.SutureNeedleHolder|Suture Needle Holder|10
+Base.Tweezers|Tweezers|10
+Base.Scalpel|Scalpel|10
+Base.Splint|Splint|10
+Base.Morphine|Morphine|10
+Base.Antibiotics|Antibiotics|10
+Base.Generator|Electric Generator|10
+Base.GunPowder|Gunpowder|10
+Base.PipeBomb|Pipe Bomb|10
+Base.Molotov|Molotov Cocktail|10
+Base.FlameTrap|Flame Trap|10
+Base.SmokeBomb|Smoke Bomb|10
+Base.Aerosolbomb|Aerosol Bomb|10
+
+# --- VERY RARE: FIREARMS, HEAVY ARMOR & MILITARY GEAR (Weight: 5) ---
+Base.Pistol|M9 Pistol|5
+Base.Pistol2|M1911 Pistol|5
+Base.Pistol3|Desert Eagle|5
+Base.Revolver_Short|Magnum Revolver|5
+Base.Shotgun|JS-2000 Shotgun|5
+Base.DoubleBarrelShotgun|Double Barrel Shotgun|5
+Base.AssaultRifle|M16 Assault Rifle|5
+Base.VarmintRifle|M733 Rifle|5
+Base.Vest_BulletPolice|Police Bulletproof Vest|5
+Base.Vest_BulletArmy|Military Bulletproof Vest|5
+Base.Vest_BulletCivilian|Civilian Bulletproof Vest|5
+Base.Hat_Police|Police Officer Hat|5
+Base.Hat_Army|Military Helmet|5
+Base.Hat_SWAT|SWAT Helmet|5
+Base.AssaultRifle2|M14 Rifle|5
+Base.Revolver_Long|Hunting Revolver|5
+Base.Revolver|Revolver|5
+Base.Pistol4|9mm Pistol|5
+Base.44Clip|44 Magnum Magazine|5
+Base.45Clip|45 Auto Magazine|5
+Base.9mmClip|9mm Magazine|5
+Base.556Clip|5.56 Magazine|5
+Base.M14Clip|M14 Magazine|5
+Base.GunLight|Gun Light|5
+Base.x2Scope|2x Scope|5
+Base.x4Scope|4x Scope|5
+Base.x8Scope|8x Scope|5
+Base.RedDot|Red Dot Sight|5
+Base.Laser|Laser Sight|5
+Base.ChokeTubeFull|Full Choke Tube|5
+Base.ChokeTubeImproved|Improved Choke Tube|5
+Base.RecoilPad|Recoil Pad|5
+
+# --- ULTRA RARE: HIGH-VALUE ENDGAME EXCLUSIVES (Weight: 1) ---
+Base.Katana|Masterwork Katana|1
+Base.Machete|Pristine Machete|1
+Base.AssaultRifle|Custom M16 Rifle|1
+Base.Vest_BulletArmy|Heavy Duty Army Vest|1
+Base.Sledgehammer|Heavy Duty Sledgehammer|1
+Base.Generator|Portable Generator|1
+Base.Bag_SurvivorBag|Survivor Backpack|1
+Base.Bag_ALICEpack_Army|Military ALICE Pack|1
