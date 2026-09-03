@@ -6,9 +6,7 @@ Designed for low-overhead server administration without relying on third-party p
 
 ---
 
-## Core Scripts
-
-### Caretaking (`caretaking.sh`)
+## Caretaking (`caretaking.sh`)
 Automated maintenance manager that checks for stale mods and player activity before initiating server updates. 
 
 * **Mod Update Detection:** Monitors server logs via RCON to detect when Workshop mods are flagged as "need update".
@@ -21,7 +19,7 @@ Automated maintenance manager that checks for stale mods and player activity bef
 
 ---
 
-### Supply Drops (`supplydrop.sh`)
+## Supply Drops (`supplydrop.sh`)
 An automated event script that delivers randomized, weighted loot directly to active players.
 
 * **Weighted RNG Distribution:** Performs a weighted random selection using `pz-pool.txt` to deliver up to 3 items per player.
@@ -31,6 +29,9 @@ An automated event script that delivers randomized, weighted loot directly to ac
 * **Testing & Verification Tools:** Includes an `--odds` flag to simulate drop distributions and a `--verify` flag to spawn the entire pool into an admin's inventory to catch invalid item IDs.
 
 ---
+
+## Events
+Alter your world in ways to make special events active, then return to your previous settings, automatically. Many examples included, which are live on my server.
 
 ## Prerequisites
 
