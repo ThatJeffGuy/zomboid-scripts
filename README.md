@@ -32,27 +32,6 @@ An automated event script that delivers randomized, weighted loot directly to ac
 
 ---
 
-### GenMods (`genmods.sh`)
-Automates the formatting of the `Mods=` entry inside the server `.ini` by mapping installed Workshop IDs directly to their internal mod names.
-
-* **Load Order Tiers:** Automatically sorts mods into prioritized tiers (e.g., libraries and frameworks first) to prevent load conflicts.
-* **Allow/Deny Lists:** Filters out unwanted sub-mods, deprecated compatibility patches, or specific Workshop folders.
-* **Usage:** Run the script against your Workshop content folder to generate a clean, semicolon-separated list of Mod IDs ready for deployment.
-
----
-
-## Utility & Edge-Case Scripts
-
-A collection of helper scripts designed for server deployment, file system corrections, and targeted mod troubleshooting.
-
-| Script | Purpose | Execution State |
-| :--- | :--- | :--- |
-| **CaseLinks (`caselinks.sh`)** | Scans mod folders for casing inconsistencies (uppercase vs. lowercase) and standardizes path names (`AnimSets`, `actiongroups`) to fix Linux loading errors. | **Offline Only** |
-| **Refetch (`refetch.sh`)** | Targeted mod repair. Deletes specific Workshop mod directories and updates the Steam `appworkshop_108600.acf` manifest to force re-downloading single mods without clearing the entire cache. | **Offline Only** |
-| **Deploy (`deploy.sh`)** | Safely stops the container, backs up the server `.ini`, dynamically injects updated `Mods=` and `WorkshopItems=` lists, restarts the server, and parses logs to verify successful mod loading. | **Offline / Setup** |
-
----
-
 ## Prerequisites
 
 * Linux host environment
