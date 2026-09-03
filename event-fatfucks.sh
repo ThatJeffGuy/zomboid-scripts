@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fat Fuck Friday — a feast, and the horde is invited.
+#   Muckbang Central lads.. watch out for splatter..
 #
 #   ./event-fatfuck.sh          start it
 #   ./event-fatfuck.sh --end    end it, back to baseline
@@ -9,7 +9,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/pz-event-lib.sh"
 EVENT_NAME="Fat Fuck Friday"
 EVENT_HOURS=          # length, if EVENT_END_TIME is empty
 EVENT_END_TIME="4"       # or an hour 1-24 (e.g. 4 = next 4am) to end at a fixed time
-EVENT_BLURB="<RGB:0.4,1,0.4>God damn it you look greasy.. but thankfully, the plants around you love it and are growing at 4x today. Food in your fridge tastes extra fresh and seemingly never expires.<LINE><RGB:1,0.3,0.3>You are always starving. So are they. More of them run now, they hear you from much further off, and they do not forget that you have chips in your pockets. Good luck!"
+EVENT_BLURB="<RGB:0.4,1,0.4>Ughh.. why are you so fat? I know why.. Plants harvest at 4x and food in the fridge seemingly never expires.<LINE><RGB:1,0.3,0.3>You are always starving you fatty. So are they. More of them run now, they hear you from much further off, and they do not forget that you have chips in your pockets. Good luck!"
 
 OVERRIDES="
   Farming = 1                             # was 3   Very Fast

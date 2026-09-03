@@ -9,7 +9,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/pz-event-lib.sh"
 EVENT_NAME="Trade School"
 EVENT_HOURS=24          # length, if EVENT_END_TIME is empty
 EVENT_END_TIME=""       # or an hour 1-24 (e.g. 4 = next 4am) to end at a fixed time
-EVENT_BLURB="<RGB:1,0.9,0.5>You awake feeling extra absorbent for knowledge. All those complicated books now seemly read like a Fox News article -- super easy!<LINE><RGB:0.8,1,0.8>Skill books and reading material are far more common while it lasts. But those Zeds are looking to take your lunch money. They all have weapons equipped and armor, and they can all open doors and windows. Sprinters? You're lucky they're at an away game today.."
+EVENT_BLURB="<RGB:1,0.9,0.5>You awake feeling extra absorbent for knowledge. All those complicated books now read like a Fox News article.<LINE><RGB:0.8,1,0.8>Skill books and reading material are far more common, but those Zeds are looking to take your lunch money. They all have weapons and armor, and they can all open doors and windows. Sprinters? You're lucky they're at an away game today.."
 
 OVERRIDES="
   MultiplierConfig.Woodwork = 3.0     # was 1.0

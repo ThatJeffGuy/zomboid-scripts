@@ -8,7 +8,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/pz-event-lib.sh"
 EVENT_NAME="Gone Camping"
 EVENT_HOURS=24
 EVENT_END_TIME=""
-EVENT_BLURB="<RGB:0.4,1,0.4>Time to get out there and touch grass!<LINE><RGB:0.8,1,0.8>Foraging, Trapping, Fishing, and Cooking gain 4x XP.<LINE><RGB:1,0.9,0.5>Zombies are also wanting to go camping, so they will be seen farther out today and in groups more often"
+EVENT_BLURB="<RGB:0.4,1,0.4>Time to touch grass!<LINE><RGB:0.8,1,0.8>Foraging, Trapping, Fishing, and Cooking gain 4x XP.<LINE><RGB:1,0.9,0.5>Zombies have also taken off to the campsites, so watch out while out there.. those fires.. they can burn anything down these days.."
 
 OVERRIDES="
   PlantAbundance = 5                  # 5 = Very Abundant
@@ -19,6 +19,10 @@ OVERRIDES="
   MultiplierConfig.Cooking = 4.0      # was 1.0
   ZombieConfig.RallyTravelDistance = 50 # was 10  they gather from further out
   ZombieConfig.RallyGroupSize = 25      # was 10  and into bigger packs
+  MaximumFireFuelHours = 72             # was 8   one load burns three days
 "
+
+INI_START="SafehouseAllowFire=true"
+INI_END="SafehouseAllowFire=false"
 
 run_event "$@"

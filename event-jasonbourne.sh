@@ -8,7 +8,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/pz-event-lib.sh"
 EVENT_NAME="Whispering Fog"
 EVENT_HOURS=24
 EVENT_END_TIME=""
-EVENT_BLURB="<RGB:0.7,0.7,0.9>A thick fog rolls over the Crater of Trade.<LINE><RGB:0.4,1,0.4>Zombies can barely see, and crouching keeps you invisible. Gunpowder and firearms loot are doubled, with Aiming and Reloading XP set to 4x.<LINE><RGB:1,0.3,0.3>Be careful: their hearing is pinpoint. One missed shot or loud step brings the whole neighborhood."
+EVENT_BLURB="<RGB:0.7,0.7,0.9>Jesus Christ.. that's Jason Bourne..<LINE><RGB:0.4,1,0.4>Zombies can barely see, and crouching keeps you invisible. Gunpowder and firearms loot are doubled, with Aiming and Reloading at 4x.<LINE><RGB:1,0.3,0.3>Be careful: the ZIA are after you.. they hear everything.."
 
 OVERRIDES="
   ZombieLore.Sight = 3                # was 2    Poor
