@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch server preset script (live and canonical copies)
+
+[Path]
+PathChanged=/opt/app/zomboid/server/media/lua/server
+PathChanged=/opt/app/zomboid/config/presets/ServerPresets.lua
+Unit=presets-guard.service
+
+[Install]
+WantedBy=multi-user.target

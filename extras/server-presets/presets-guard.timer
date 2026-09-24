@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic fallback check for server preset script
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=5min
+Unit=presets-guard.service
+
+[Install]
+WantedBy=timers.target

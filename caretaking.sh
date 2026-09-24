@@ -54,6 +54,14 @@ POLL_INTERVAL=10
 MODCHECK_WAIT=45
 
 LOG=/root/pz-caretaking.log            # Change as needed
+
+# Keep the server offline on purpose: while this file exists, a stopped
+# container is left stopped instead of being auto-started below. If the file
+# holds a date/time (in KEEP_OFFLINE_TZ, e.g. "2026-10-01 00:00"), the flag
+# expires then: the next run deletes it, starts the server and emails a
+# heads-up. An empty file means "offline until someone deletes this file".
+KEEP_OFFLINE_FLAG=/opt/app/zomboid/config/storms/.keep-offline          # Change as needed
+KEEP_OFFLINE_TZ=America/New_York          # Change as needed
 LOG_KEEP_HOURS=48
 LOCK=/root/pz-restart.lock
 
@@ -333,6 +341,29 @@ COLD_START=false
 
 if ! container_running; then
   container_exists || die "container '$CONTAINER' does not exist on this host"
+
+  if [[ -e "$KEEP_OFFLINE_FLAG" ]]; then
+    until_str="$(head -1 "$KEEP_OFFLINE_FLAG" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+    until_ts=""
+    if [[ -n "$until_str" ]]; then
+      until_ts="$(TZ="$KEEP_OFFLINE_TZ" date -d "$until_str" +%s 2>/dev/null)"
+      [[ -n "$until_ts" ]] || log "WARNING: can't read '$until_str' in $KEEP_OFFLINE_FLAG as a date -- treating it as offline until deleted"
+    fi
+
+    if [[ -n "$until_ts" ]] && (( $(date +%s) >= until_ts )); then
+      if [[ "$DRY_RUN" == true ]]; then
+        log "DRY RUN: keep-offline flag expired ($until_str); would delete it and start '$CONTAINER'"
+        exit 0
+      fi
+      rm -f "$KEEP_OFFLINE_FLAG"
+      log "keep-offline flag expired ($until_str) — deleted it; starting '$CONTAINER' as normal"
+      send_alert "$CONTAINER is going live" \
+        "The keep-offline flag for $CONTAINER expired ($until_str, $KEEP_OFFLINE_TZ), so caretaking.sh deleted it and is starting the server now. Normal caretaking (auto-start, crash recovery, mod-update restarts) is back on."
+    else
+      log "container '$CONTAINER' is stopped and $KEEP_OFFLINE_FLAG exists${until_str:+ (until $until_str)} — leaving it offline"
+      exit 0
+    fi
+  fi
 
   if [[ "$STATUS_ONLY" == true ]]; then
     log "container '$CONTAINER' is stopped (not starting it for --status)"

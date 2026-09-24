@@ -39,6 +39,11 @@ before initiating server updates.
   confirm the server is back online and RCON is answering.
 - **Logging & housekeeping:** output is appended to a dedicated log file,
   and it prunes old Zomboid logs and dangling Docker images.
+- **Keep-offline flag:** while `KEEP_OFFLINE_FLAG` exists, a stopped
+  container is left stopped instead of auto-started (handy while a world is
+  still being built). Put a date/time in the file (e.g. `2026-10-01 00:00`,
+  in `KEEP_OFFLINE_TZ`) and it expires then: the next run deletes it, starts
+  the server, and sends an alert. An empty file means "offline until deleted".
 
 ```
 caretaking.sh --status     # print current state, don't act
@@ -91,6 +96,40 @@ supplydrop.sh --verify <Player>  # spawn 1 of every pool item on a player
 
 Meant to run on a schedule too (it self-schedules a random next window
 after each successful drop).
+
+## Permission guard (`fix-perms.sh`)
+
+Re-adds the executable bit to any `*.sh` in the scripts directory that lost
+it. Editing scripts over an SMB share (or with tools that don't preserve
+Unix permissions) can silently strip `+x`, after which cron can't run them at
+all. Run it every 5 minutes from root's crontab:
+
+```
+*/5 * * * * /opt/app/zomboid/config/storms/fix-perms.sh >> /root/perm-guard.log 2>&1
+```
+
+## Extras
+
+- **`extras/pz-health.sh`** -- read-only health snapshot for one game
+  container: state, restarts, OOM kills, CPU/memory, whether the game and
+  RCON ports are listening, online players, and new errors since boot
+  (known-harmless vanilla B42 boot noise filtered out). Loop it for a soak
+  test before opening a server up.
+- **`extras/server-presets/`** -- an example of applying world settings that
+  live in the save rather than in the sandbox file, without anyone logging
+  in. `ServerPresets.lua` sets
+  [Irish's Dinosaurs](https://steamcommunity.com/sharedfiles/filedetails/?id=3784875732)
+  spawn weights/options and creates admin safezones around spawn points,
+  once per world. It must sit in the game's own `media/lua/server/` folder,
+  which a game update could replace, so keep the real copy in your config
+  directory and let the `presets-guard` systemd units (`.path` reacts within
+  a second, `.timer` re-checks every 5 minutes) copy it back into place:
+
+  ```
+  install -m 0755 extras/server-presets/presets-guard.sh /usr/local/sbin/
+  install -m 0644 extras/server-presets/presets-guard.{service,path,timer} /etc/systemd/system/
+  systemctl daemon-reload && systemctl enable --now presets-guard.path presets-guard.timer
+  ```
 
 ## Prerequisites
 

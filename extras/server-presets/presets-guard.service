@@ -1,0 +1,6 @@
+[Unit]
+Description=Restore server preset script into the game install dir
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/presets-guard.sh
