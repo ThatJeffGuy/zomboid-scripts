@@ -1,6 +1,8 @@
 -- Server presets for Irish's Dinosaurs (VRaptor) + admin safezones. Server-side only: install it
--- in the game's media/lua/server/ (clients never load that folder, so it is outside the Lua
--- checksum). Applies once per world, tracked in global ModData, so a wiped world gets the
+-- in the game's media/lua/server/. NOTE: that folder IS part of the multiplayer Lua checksum
+-- (checked in B42.20), and players don't have this file, so non-admin players fail the check;
+-- run with DoLuaChecksum=false, or (B42.21+, which re-enables loadstring) load it from outside
+-- the game folder - see extras/zomboid-evolved/. Applies once per world, tracked in global ModData, so a wiped world gets the
 -- presets again and later in-game admin tweaks are not overwritten.
 -- Bump PRESET_VERSION to force a re-apply.
 if isClient() then return end

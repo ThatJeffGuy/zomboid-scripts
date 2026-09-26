@@ -152,7 +152,7 @@ if [[ -n "$VERIFY" ]]; then
   for entry in "${ITEMS[@]}"; do
     id="${entry%%|*}"
     out="$(pzrcon "additem \"$VERIFY\" \"$id\" 1")"
-    grep -qiE 'unknown|error|invalid|no such|not found' <<<"$out" && { echo "  BAD  $id"; bad=$((bad+1)); }
+    grep -qiE 'unknown|error|invalid|no such|not found|doesn.t exist' <<<"$out" && { echo "  BAD  $id"; bad=$((bad+1)); }
     sleep "$DELAY"
   done
   log "Done. $bad bad ID(s) of ${#ITEMS[@]}."
@@ -218,7 +218,7 @@ for p in "${PLAYERS[@]}"; do
     names+=("${disp:-$id}")
     if [[ $DRY -eq 1 ]]; then echo "  would send: additem \"$p\" \"$id\" 1"; continue; fi
     out="$(pzrcon "additem \"$p\" \"$id\" 1")"
-    if grep -qiE 'unknown|error|invalid|no such|not found' <<<"$out"; then
+    if grep -qiE 'unknown|error|invalid|no such|not found|doesn.t exist' <<<"$out"; then
       log "  BAD ID  $p <- $id : $out"
       player_failed=$((player_failed + 1))
       failed_count=$((failed_count + 1))

@@ -39,6 +39,10 @@ before initiating server updates.
   confirm the server is back online and RCON is answering.
 - **Logging & housekeeping:** output is appended to a dedicated log file,
   and it prunes old Zomboid logs and dangling Docker images.
+- **Reboot prep (`--reboot-prep`):** for a host that reboots the container
+  on a schedule: warns online players (`REBOOT_WARN_SECONDS`, default 5
+  minutes, plus the final warning), saves the world, and exits; the reboot
+  itself does the restart.
 - **Keep-offline flag:** while `KEEP_OFFLINE_FLAG` exists, a stopped
   container is left stopped instead of auto-started (handy while a world is
   still being built). Put a date/time in the file (e.g. `2026-10-01 00:00`,
@@ -97,6 +101,26 @@ supplydrop.sh --verify <Player>  # spawn 1 of every pool item on a player
 Meant to run on a schedule too (it self-schedules a random next window
 after each successful drop).
 
+## New-character kits (`newplayer-kit.sh`)
+
+Gives a small kit every time a character is created, read from the server's
+`PerkLog` (`[Created Player N]` lines, so set `PerkLogs=true` in the server ini).
+Run it from cron every minute.
+
+- **Brand-new player** (SteamID never seen on this world): `NEW_KIT` plus one
+  random item from `MRE_CHOICES` to them, and one `MRE_CHOICES` item to
+  everyone else online. The SteamID is then recorded.
+- **Respawn after death** (known SteamID): `RESPAWN_KIT` to that player only.
+- Offline players never get anything later (no queue); the triggering player is
+  retried for 5 minutes in case they are still spawning or the server is
+  restarting.
+- Only the server's own `Item ... Added in ...'s inventory` reply counts as
+  delivered, so an RCON outage never logs a false delivery.
+- Reuses a random line from `ANNOUNCE_MESSAGES` in `supplydrop.sh` as the
+  broadcast, read at run time (it never runs `supplydrop.sh`).
+- `--seed` records every SteamID in the player DB as seen (run it once on an
+  existing world); `--reset` forgets them (for a wiped world); `--dry-run`.
+
 ## Permission guard (`fix-perms.sh`)
 
 Re-adds the executable bit to any `*.sh` in the scripts directory that lost
@@ -130,6 +154,38 @@ all. Run it every 5 minutes from root's crontab:
   install -m 0644 extras/server-presets/presets-guard.{service,path,timer} /etc/systemd/system/
   systemctl daemon-reload && systemctl enable --now presets-guard.path presets-guard.timer
   ```
+
+- **`examples/pools/`** -- the two Wubcord servers' themed supply-drop pools:
+  `crater-of-trade.txt` (vanilla + that server's mods; its guns are named as
+  [Guns of Marz](https://steamcommunity.com/sharedfiles/filedetails/?id=3722134990)
+  items because Marz replaces vanilla guns and ammo on creation) and
+  `zomboid-evolved.txt` (primal/dinosaur theme: archery, black powder, horse
+  tack, dino bait and eggs, no modern guns). Every ID was checked against the
+  scripts installed on that server; B42 renamed or removed dozens of B41 IDs.
+- **`extras/zomboid-evolved/`** -- server-side scripts from Zomboid Evolved
+  (Irish's Dinosaurs as the only threat):
+  - `PE_DinoDamage.lua` -- every hit takes a fixed share of a dino's health by
+    species and weapon class (e.g. raptor: 7-10 melee hits, 1-2 gunshots, 3-4
+    arrows). B42 applies animal damage as `damage x healthLossMultiplier`,
+    which made melee near-useless, while the knife close kill (the "chin stab")
+    multiplies damage x1000 on *any* target whenever no more than one zombie
+    is chasing you -- always true with zombies off -- and one-shot everything.
+    Uses `Hook.WeaponHitCharacter`, which runs before damage and can cancel it.
+  - `PE_DinoHeat.lua` -- spawn-zone safe radius that shrinks as the server
+    ages, plus a frontier spawner that keeps dinos around players outside it.
+  - `ze-switchover.sh` / `pz-4221-reminder.sh` -- the plan for turning the Lua
+    checksum back on once B42.21 (which re-enables `loadstring`) is Stable, and
+    a one-shot email reminder for it.
+  - **Checksum caveat:** the game's `media/lua/server` folder is part of the
+    multiplayer Lua checksum, so server-only scripts placed there make
+    non-admin players fail it (admins bypass it, which hides the problem).
+- **`extras/map-mods/`** -- two Workshop mods that replace the in-game world
+  map and minimap with a painted map (a B42 image pyramid, with the vanilla
+  street and place names on top), and `build_pyramid.py`, which cuts map art
+  into the `pyramid.zip` layout the game uses. The tile zips are not committed.
+  `ZomboidEvolvedMap` also carries `ZE_ServerScripts.lua`, a server-side loader
+  that runs scripts from `Zomboid/Lua/ZomboidEvolved/` with `loadstring`
+  (B42.21+), keeping them out of the checksum.
 
 ## Prerequisites
 

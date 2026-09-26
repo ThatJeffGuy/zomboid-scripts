@@ -17,9 +17,11 @@
 #   - Non-numeric characters in the weight field are stripped; a missing or
 #     zero weight is treated as 1.
 #
-# 233 items / total weight 7897
-#   Updated 2026-09-26 for Build 42: 37 item IDs that no longer exist in B42 were renamed to
-#   their B42 names or removed (a dead ID just wastes the roll). All IDs are vanilla Base items.
+# 291 items / total weight 8824
+#   Rebuilt 2026-09-26: dead B42 IDs fixed; guns, ammo, magazines and attachments are named
+#   as Guns of Marz items (Marz replaces the vanilla ones when they are created); Crater mod
+#   items added at the end of each tier. Every ID checked against this server's installed scripts.
+#
 # ==============================================================================
 
 # --- COMMON: BASIC SURVIVAL, CONSUMABLES & HARDWARE (Weight: 60) ---
@@ -120,6 +122,14 @@ Base.Dice|Dice|60
 Base.CheckerBoard|Checkerboard|60
 Base.Locket|Locket|60
 
+# Crater mod items (added 2026-09-26)
+bdtmre.bdtmre26a1|MRE: Chili with Beans|60
+bdtmre.bdtmre26a9|MRE: Beef Stew|60
+bdtmre.bdtmre93c11|MRE: Chicken and Rice|60
+bdtmre.bdtmre26b16|MRE: Chicken Burrito Bowl|60
+Base.IMWSEnergyDrink|Energy Drink|60
+CTorch.CrankTorchBox|Packaged Crank Flashlight|60
+
 # --- UNCOMMON: TOOLS, CLOTHING, GEAR & MID-TIER ITEMS (Weight: 25) ---
 Base.TinOpener|Can Opener|25
 Base.Hammer|Hammer|25
@@ -189,20 +199,35 @@ Base.Bag_BigHikingBag|Big Hiking Bag|25
 Base.Bag_NormalHikingBag|Hiking Bag|25
 Base.Bag_Schoolbag|Schoolbag|25
 
+# Crater mod items (added 2026-09-26)
+CTorch.CrankTorch1|Hand Crank Flashlight|25
+PSR.PowerBank|Power Bank|25
+PSR.ImprovisedBattery|Improvised Battery|25
+EFTBP.Bag_SlingbagBack|Tactical Sling Bag|25
+EFTBP.DIYBackpackMag1|DIY Backpack Magazine|25
+Swatpack.SWATPouch|SWAT Leg Pouch|25
+Swatpack.Gloves_SwatGloves|SWAT Kevlar Gloves|25
+BusStop.BusTicket|Bus Ticket|25
+Base.SkillJournalBook|Skill Journal|25
+HBAC.PrimerBox|Box of Primers|25
+HBAC.9mmProjectileBox|Box of 9mm Projectiles|25
+LabItems.LabSyringePack|Pack of Syringes|25
+
 # --- RARE: AMMO, WEAPONS & MEDICAL SUPPLIES (Weight: 10) ---
 Base.HuntingKnife|Hunting Knife|10
 Base.KitchenKnife|Kitchen Knife|10
 Base.KnifePocket|Pocket Knife|10
-Base.Bullets9mmBox|Box of 9mm Bullets|10
-Base.Bullets45Box|Box of .45 Auto Bullets|10
-Base.Bullets44Box|Box of .44 Magnum Bullets|10
-Base.Bullets38Box|Box of .38 Special Bullets|10
-Base.556Box|Box of 5.56mm Bullets|10
-Base.ShotgunShellsBox|Box of Shotgun Shells|10
-Base.308Box|Box of .308 Bullets|10
-Base.Bullets9mm|9mm Rounds|10
-Base.Bullets45|.45 Auto Rounds|10
-Base.ShotgunShells|Shotgun Shells|10
+MarzGuns.9x19_Box|Box of 9mm|10
+MarzGuns.45_Box|Box of .45|10
+MarzGuns.44_Box|Box of .44|10
+MarzGuns.38_Box|Box of .38|10
+MarzGuns.223_Box|Box of .223|10
+MarzGuns.556x45_Box|Box of 5.56|10
+MarzGuns.12Gauge_Box_Buckshot|Box of Buckshot|10
+MarzGuns.308_Box|Box of .308|10
+MarzGuns.357_Box|Box of .357|10
+MarzGuns.3030_Box|Box of .30-30|10
+MarzGuns.12Gauge_Box_Slug|Box of Slugs|10
 Base.HolsterSimple|Holster|10
 Base.SpearCrafted|Crafted Spear|10
 Base.BaseballBat|Baseball Bat|10
@@ -228,41 +253,86 @@ Base.Aerosolbomb|Aerosol Bomb|10
 Base.Sledgehammer|Sledgehammer|8
 Base.Bag_ALICEpack_Army|ALICE Pack|8
 
+# Crater mod items (added 2026-09-26)
+bdtmre.bdtmreboxaloot|Unopened MRE Box A|10
+bdtmre.bdtmreboxbloot|Unopened MRE Box B|10
+bdtmre.bdtmreboxcloot|Unopened MRE Box C|10
+PSR.SolarPanel|Solar Panel|10
+PSR.PSRInverter|Inverter|10
+PSR.PSRMag1|Solar Energy Magazine|10
+EFTBP.Bag_3DayPack|3-Day Pack|10
+EFTBP.Bag_Beta2|Beta 2 Backpack|10
+EFTBP.Bag_Pillbox|Pillbox Backpack|10
+EFTBP.DIYBackpackMag2|DIY Big Backpack Magazine|10
+Swatpack.Hat_SwatHelmet|SWAT Helmet|10
+Swatpack.SwatSmokeGrenade|Smoke Grenade|10
+Swatpack.SwatStunGrenade|Stun Grenade|10
+HBAC.ReloadingTool|Reloading Tool|10
+Base.Military_Backpack_Strategist_Medium-Green|Military Backpack (Medium)|10
+Base.Military_BagBack_StormPack_Medium-Medic|Medic Storm Pack|10
+MarzGuns.762x39_Box|Box of 7.62x39|10
+MarzGuns.45Magazine12_USP|USP Magazine|10
+
 # --- VERY RARE: FIREARMS, HEAVY ARMOR & MILITARY GEAR (Weight: 5) ---
-Base.Pistol|M9 Pistol|5
-Base.Pistol2|M1911 Pistol|5
-Base.Pistol3|Desert Eagle|5
-Base.Revolver_Short|Magnum Revolver|5
-Base.Shotgun|JS-2000 Shotgun|5
-Base.DoubleBarrelShotgun|Double Barrel Shotgun|5
-Base.VarmintRifle|M733 Rifle|5
+MarzGuns.M92FS|Beretta M92FS|5
+MarzGuns.M1911|M1911|5
+MarzGuns.DEAGLE|Desert Eagle|5
+MarzGuns.DETECTIVE_38|Detective .38|5
+MarzGuns.REMINGTON_870|Remington 870|5
+MarzGuns.DOUBLEBARREL|Double Barrel Shotgun|5
+MarzGuns.MINI_14|Mini-14|5
 Base.Vest_BulletPolice|Police Bulletproof Vest|5
 Base.Vest_BulletCivilian|Civilian Bulletproof Vest|5
 Base.Hat_Police|Police Officer Hat|5
 Base.Hat_Army|Military Helmet|5
 Base.Hat_SWAT|SWAT Helmet|5
-Base.AssaultRifle2|M14 Rifle|5
-Base.Revolver_Long|Hunting Revolver|5
-Base.Revolver|Revolver|5
-Base.44Clip|44 Magnum Magazine|5
-Base.45Clip|45 Auto Magazine|5
-Base.9mmClip|9mm Magazine|5
-Base.556Clip|5.56 Magazine|5
-Base.M14Clip|M14 Magazine|5
-Base.GunLight|Gun Light|5
-Base.x2Scope|2x Scope|5
-Base.x4Scope|4x Scope|5
-Base.x8Scope|8x Scope|5
-Base.RedDot|Red Dot Sight|5
-Base.Laser|Laser Sight|5
-Base.ChokeTubeFull|Full Choke Tube|5
-Base.ChokeTubeImproved|Improved Choke Tube|5
-Base.RecoilPad|Recoil Pad|5
+MarzGuns.M14|M14|5
+MarzGuns.SW629|S&W 629|5
+MarzGuns.PYTHON|Colt Python|5
+MarzGuns.P226|SIG P226|5
+MarzGuns.38357SpeedLoader6|.38/.357 Speedloader|5
+MarzGuns.45Magazine7_M1911|M1911 Magazine|5
+MarzGuns.9x19Magazine15_M92FS|M92FS Magazine|5
+MarzGuns.556x45Magazine30_STANAG|STANAG 30rd Magazine|5
+MarzGuns.762x51Magazine20_M14|M14 Magazine|5
+MarzGuns.TL_Light|Weapon Light|5
+MarzGuns.ElcanX2_Scope|x2 Scope|5
+MarzGuns.LR4X_Scope|x4 Scope|5
+MarzGuns.LR10X_Scope|x10 Scope|5
+MarzGuns.Aimpoint_Sight|Red Dot Sight|5
+MarzGuns.PX1_Laser|Laser Sight|5
+MarzGuns.NDR_Suppressor|Rifle Suppressor|5
+MarzGuns.Shh9_Suppressor|9mm Suppressor|5
+AliceSlings.AliceWeaponSling|Weapon Sling|5
+
+# Crater mod items (added 2026-09-26)
+PSR.DeepCycleBattery|200Ah Battery|5
+EFTBP.Bag_Paratus|Paratus Backpack|5
+EFTBP.Bag_Raid|Raid Backpack|5
+Base.Military_Backpack_Ranger_Large-Green|Military Backpack (Large)|5
+Swatpack.Vest_BulletSwatpack|SWAT Bulletproof Vest|5
+Swatpack.SwatFragGrenade|Frag Grenade|5
+Swatpack.RiotShieldSwat|SWAT Riot Shield|5
+MarzGuns.AK47|AK-47|5
+MarzGuns.MP5|MP5|5
+MarzGuns.USP|USP .45|5
+MarzGuns.REMINGTON_700|Remington 700|5
+MarzGuns.762x39Magazine30|AK Magazine|5
+MarzGuns.9x19Magazine30_MP5|MP5 Magazine|5
 
 # --- ULTRA RARE: HIGH-VALUE ENDGAME EXCLUSIVES (Weight: 1) ---
 Base.Katana|Katana|1
 Base.Machete|Machete|1
-Base.AssaultRifle|M16 Assault Rifle|1
+MarzGuns.M4A1|M4A1|1
 Base.Vest_BulletArmy|Military Bulletproof Vest|1
 Base.Generator|Electric Generator|1
 Base.Bag_SurvivorBag|Survivor Backpack|1
+
+# Crater mod items (added 2026-09-26)
+PSR.SuperBattery|400Ah Battery|1
+Base.Military_Backpack_Colossus_VeryLarge-Green|Colossus Military Backpack|1
+EFTBP.Bag_Berkut|Berkut Backpack|1
+MarzGuns.SVD|SVD Dragunov|1
+MarzGuns.M60|M60|1
+LabItems.CmpSyringeWithQualityVaccine|Quality Zombie Vaccine|1
+LabItems.CmpSyringeWithCure|Zombie Cure|1

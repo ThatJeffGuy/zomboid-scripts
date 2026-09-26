@@ -47,6 +47,10 @@ WARN_THRESHOLD=4
 WARN_SECONDS_SHORT=30
 WARN_SECONDS_LONG=90
 FINAL_WARN_SECONDS=30
+# --reboot-prep (run by host lxc-maintenance before its nightly CT reboot):
+# players get this long a warning, then the world is saved. The reboot
+# itself stops the container, whose SIGTERM handler saves + quits.
+REBOOT_WARN_SECONDS=300
 
 BOOT_TIMEOUT=300
 COLD_BOOT_TIMEOUT=180
@@ -54,6 +58,7 @@ POLL_INTERVAL=10
 MODCHECK_WAIT=45
 
 LOG=/root/pz-caretaking.log            # Change as needed
+LOG_KEEP_HOURS=48
 
 # Keep the server offline on purpose: while this file exists, a stopped
 # container is left stopped instead of being auto-started below. If the file
@@ -62,7 +67,6 @@ LOG=/root/pz-caretaking.log            # Change as needed
 # heads-up. An empty file means "offline until someone deletes this file".
 KEEP_OFFLINE_FLAG=/opt/app/zomboid/config/storms/.keep-offline          # Change as needed
 KEEP_OFFLINE_TZ=America/New_York          # Change as needed
-LOG_KEEP_HOURS=48
 LOCK=/root/pz-restart.lock
 
 STALE_PATTERN='need update'
@@ -81,9 +85,8 @@ CRASH_LOOP_THRESHOLD=3                  # more than this many recoveries in the 
 
 # Best-effort email alerts for crash recoveries (see send_alert()). Set these
 # in /etc/pz-caretaking.env (root-only, not this script, and not something to
-# commit to a repo) rather than here. If `swaks` isn't installed, or these are
-# left blank, alerts just get logged instead of emailed; nothing else about
-# the run is affected.
+# commit to a repo) rather than here. If `swaks` isn't installed, alerts just get logged
+# instead of emailed; nothing else about the run is affected.
 GMAIL_USER=""
 GMAIL_APP_PASS=""
 EMAIL_TO=""
@@ -92,12 +95,14 @@ EMAIL_TO=""
 DRY_RUN=false
 FORCE=false
 STATUS_ONLY=false
+REBOOT_PREP=false
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --force)   FORCE=true ;;
     --status)  STATUS_ONLY=true ;;
+    --reboot-prep) REBOOT_PREP=true ;;
     *) echo "unknown flag: $arg" >&2; exit 64 ;;
   esac
 done
@@ -335,7 +340,35 @@ housekeeping() {
 }
 
 trim_log
-log "=== run start (dry_run=$DRY_RUN force=$FORCE) ==="
+log "=== run start (dry_run=$DRY_RUN force=$FORCE reboot_prep=$REBOOT_PREP) ==="
+
+if [[ "$REBOOT_PREP" == true ]]; then
+  if ! container_running || ! game_process_alive; then
+    log "reboot prep: server is not running; nothing to warn or save"
+    exit 0
+  fi
+  PLAYERS="$(player_count)"
+  log "reboot prep: players online: $PLAYERS"
+  if [[ "$DRY_RUN" == true ]]; then
+    log "DRY RUN: would warn ${PLAYERS} player(s) for ${REBOOT_WARN_SECONDS}s, then save"
+    exit 0
+  fi
+  if (( PLAYERS > 0 )); then
+    msg="Nightly maintenance: server restarting in $(( REBOOT_WARN_SECONDS / 60 )) minutes -- get somewhere safe."
+    log "warn: $msg"
+    rcon "servermsg \"$msg\"" >/dev/null
+    sleep $(( REBOOT_WARN_SECONDS - FINAL_WARN_SECONDS ))
+    final="Nightly maintenance restart in ${FINAL_WARN_SECONDS} seconds -- log out somewhere safe now."
+    log "warn: $final"
+    rcon "servermsg \"$final\"" >/dev/null
+    sleep "$FINAL_WARN_SECONDS"
+  fi
+  log "saving world"
+  rcon "save" >/dev/null
+  sleep 15
+  log "=== run complete: reboot prep done (warned + saved); host maintenance restarts the server ==="
+  exit 0
+fi
 
 COLD_START=false
 

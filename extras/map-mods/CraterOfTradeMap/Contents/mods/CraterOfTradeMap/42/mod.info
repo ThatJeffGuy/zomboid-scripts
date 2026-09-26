@@ -1,0 +1,7 @@
+name=Crater of Trade Map
+id=CraterOfTradeMap
+author=ScottishHaze
+poster=poster.png
+description=Replaces the in-game world map and minimap with the painted Crater of Trade map (the same map as zomboid.wubcord.app), with the game's own street and place names on top. Printed and stash maps are unchanged. Toggle it off in Options > Mods. Made for The Crater of Trade server - a Wubcord World.
+modversion=1.0.0
+versionMin=42.19.0

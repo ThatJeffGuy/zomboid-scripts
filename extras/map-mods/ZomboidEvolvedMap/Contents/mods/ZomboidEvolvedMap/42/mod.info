@@ -1,0 +1,7 @@
+name=Zomboid Evolved Map
+id=ZomboidEvolvedMap
+author=ScottishHaze
+poster=poster.png
+description=Replaces the in-game world map and minimap with the painted Zomboid Evolved map (the same map as zomboid.wubcord.app), with the game's own street and place names on top. Printed and stash maps are unchanged. Toggle it off in Options > Mods. Also carries a small server-side loader for the Zomboid Evolved server (inactive on players' games). Made for the Zomboid Evolved server - a Wubcord World.
+modversion=1.0.0
+versionMin=42.19.0
