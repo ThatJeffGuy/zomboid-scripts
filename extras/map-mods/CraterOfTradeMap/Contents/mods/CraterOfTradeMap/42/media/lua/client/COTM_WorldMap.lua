@@ -15,6 +15,9 @@ local ZEM = CraterOfTradeMap
 ZEM.options = PZAPI.ModOptions:create(MOD_ID, "Crater of Trade Map")
 ZEM.useArt = ZEM.options:addTickBox("useArt", "Use the Crater of Trade map art", true,
     "Draw the painted Crater of Trade map in the world map and minimap (reopen the map to apply).")
+-- used by COTM_MenuBranding.lua (main menu only)
+ZEM.menuIcon = ZEM.options:addTickBox("menuIcon", "Crater of Trade badge in the server browser", true,
+    "Show the Crater of Trade banner and badge for the server in Favorites and the public server list.")
 
 local function enabled()
     return not ZEM.useArt or ZEM.useArt:getValue() ~= false

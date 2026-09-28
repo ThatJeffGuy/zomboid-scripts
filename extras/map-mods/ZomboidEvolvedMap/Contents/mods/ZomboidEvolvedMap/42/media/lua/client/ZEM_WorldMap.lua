@@ -15,6 +15,9 @@ local ZEM = ZomboidEvolvedMap
 ZEM.options = PZAPI.ModOptions:create(MOD_ID, "Zomboid Evolved Map")
 ZEM.useArt = ZEM.options:addTickBox("useArt", "Use the Zomboid Evolved map art", true,
     "Draw the painted Zomboid Evolved map in the world map and minimap (reopen the map to apply).")
+-- used by ZEM_MenuBranding.lua (server browser only)
+ZEM.menuIcon = ZEM.options:addTickBox("menuIcon", "Zomboid Evolved badge in the server browser", true,
+    "Show the Zomboid Evolved badge and map banner for the server in Favorites and the public server list.")
 
 local function enabled()
     return not ZEM.useArt or ZEM.useArt:getValue() ~= false

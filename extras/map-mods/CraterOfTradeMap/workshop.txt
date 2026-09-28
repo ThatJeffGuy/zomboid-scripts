@@ -1,8 +1,9 @@
 version=1
+id=3809712666
 title=Crater of Trade Map
 description=Replaces the in-game world map and minimap with the painted Crater of Trade map - the same map as the live map at zomboid.wubcord.app - with the game's own street and place names on top.
 description=
-description=[list][*]World map and minimap only; printed and stash maps are unchanged.[*]Areas outside the painted map fall back to the vanilla terrain image.[*]Players can switch back to the vanilla map in Options > Mods > Crater of Trade Map.[/list]
+description=[list][*]World map and minimap only; printed and stash maps are unchanged.[*]Areas outside the painted map fall back to the vanilla terrain image.[*]Server browser branding: the Crater of Trade banner and badge for the server in Favorites and the public list (only while the mod is enabled in the main-menu Mods list).[*]Every part can be switched off in Options > Mods > Crater of Trade Map.[/list]
 description=Made for The Crater of Trade - A Wubcord World. Build 42.
 tags=Build 42;Interface;Map
 visibility=public

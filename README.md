@@ -144,7 +144,9 @@ all. Run it every 5 minutes from root's crontab:
   in. `ServerPresets.lua` sets
   [Irish's Dinosaurs](https://steamcommunity.com/sharedfiles/filedetails/?id=3784875732)
   spawn weights/options and creates admin safezones around spawn points,
-  once per world. It must sit in the game's own `media/lua/server/` folder,
+  once per world. It also locks the dino options: Irish's Dinosaurs pushes a
+  joining admin's local options to the server and saves them into the world,
+  so a fresh admin client can silently reset every tuned value. It must sit in the game's own `media/lua/server/` folder,
   which a game update could replace, so keep the real copy in your config
   directory and let the `presets-guard` systemd units (`.path` reacts within
   a second, `.timer` re-checks every 5 minutes) copy it back into place:
@@ -172,10 +174,34 @@ all. Run it every 5 minutes from root's crontab:
     is chasing you -- always true with zombies off -- and one-shot everything.
     Uses `Hook.WeaponHitCharacter`, which runs before damage and can cancel it.
   - `PE_DinoHeat.lua` -- spawn-zone safe radius that shrinks as the server
-    ages, plus a frontier spawner that keeps dinos around players outside it.
+    ages (1000 tiles on day 0 to 150 by day 30, in real days), a frontier
+    spawner that keeps dinos around players outside it, a hard keep-out
+    around each camp, and camp pressure: a shelter budget per player, hunt
+    packs sent after overstayers, and night raids once the zone has fully
+    collapsed.
+  - `PE_Sentries.lua` -- camp defenses. Wandering dinos and hostile Bandits
+    inside a camp core are shot (a real corpse); hunt and raid packs meet a
+    small ammo pool that reloads every few seconds. Every road into a camp gets
+    a sandbag checkpoint (two walls across the road, a nest on each shoulder
+    with a lamp), the gaps between them get single-row sandbag gates, and every
+    lit lamp is secretly a gun that shoots dinos and hostile bandits near it.
+    Kills are announced per camp team ("Alpha Team killed a raptor").
+  - `PE_DefenseLine.lua` -- collapsing defense lines: every 50 tiles of radius a
+    ring of sandbag gates (a checkpoint where a road crosses it) stands just
+    inside the safe radius, falls into lootable ruins when the radius passes it,
+    and is cleared 3 days later. Built lazily near players and only on loaded,
+    clear ground. It also keeps the lamp list (global ModData `PELights`) that
+    the map mod's `ZEM_Lights.lua` turns into light on every client.
+  - `PE_AdminCmd.lua` -- a whitelisted command file (`Zomboid/Lua/PE/cmd.txt`)
+    for testing things that need a player in game: spawn a dino or a Bandits
+    clan near a player, list bandits and animal corpses, trigger a hunt or raid,
+    build sample gates. It only runs while someone is online if the server has
+    PauseEmpty on.
   - `ze-switchover.sh` / `pz-4221-reminder.sh` -- the plan for turning the Lua
     checksum back on once B42.21 (which re-enables `loadstring`) is Stable, and
-    a one-shot email reminder for it.
+    a one-shot email reminder for it. Done on Zomboid Evolved: the scripts run
+    from `Zomboid/Lua/ZomboidEvolved/` through the map mod's loader, and a
+    regular (non-admin) player joins with `DoLuaChecksum=true`.
   - **Checksum caveat:** the game's `media/lua/server` folder is part of the
     multiplayer Lua checksum, so server-only scripts placed there make
     non-admin players fail it (admins bypass it, which hides the problem).
@@ -185,7 +211,12 @@ all. Run it every 5 minutes from root's crontab:
   into the `pyramid.zip` layout the game uses. The tile zips are not committed.
   `ZomboidEvolvedMap` also carries `ZE_ServerScripts.lua`, a server-side loader
   that runs scripts from `Zomboid/Lua/ZomboidEvolved/` with `loadstring`
-  (B42.21+), keeping them out of the checksum.
+  (B42.21+), keeping them out of the checksum, and `ZEM_Lights.lua`, which draws
+  a steady light at every checkpoint lamp the server lists and plays the lamp
+  guns' shots with a muzzle flash. Both mods carry a small server-browser
+  branding script (`*_MenuBranding.lua`: a badge and banner on their server's
+  row); its images are not committed, and `COTM_MenuBranding.lua` has
+  placeholder host/IP values.
 
 ## Prerequisites
 

@@ -1,6 +1,8 @@
 -- Project Evolution dinosaur damage model (server-side only, outside the Lua checksum).
 -- Replaces PE_CloseKillGuard.lua (2026-09-26). Theme: dinosaurs are used to claws and teeth but
--- have never seen guns, so melee is a slog (raptor 7-10 hits) and guns are powerful (1-2 shots).
+-- have never seen guns, so melee is a slog (raptor 5-7 hits; was 7-10 until 2026-09-27, all melee
+-- ranges scaled x5/7 then) and ranged is their weakness: guns and bows got ~25% stronger the same
+-- day (raptor: gun 1-1.5 shots, bow 2-3 arrows; hits-to-kill may be fractional).
 --
 -- Every hit on a dinosaur takes a fixed share of its max health = 1 / hits-to-kill, where
 -- hits-to-kill comes from the table below for that species and weapon class, interpolated by the
@@ -17,14 +19,14 @@ if isClient() then return end
 
 -- hits to kill: { melee = {strong, weak}, gun = {strong, weak}, bow = {strong, weak} }
 local HITS = {
-    vraptor = { melee = { 7, 10 },  gun = { 1, 2 }, bow = { 3, 4 } },
-    vpachy  = { melee = { 7, 10 },  gun = { 1, 2 }, bow = { 3, 5 } },
-    vcarno  = { melee = { 10, 14 }, gun = { 2, 3 }, bow = { 5, 7 } },
-    vstego  = { melee = { 14, 18 }, gun = { 3, 4 }, bow = { 7, 9 } },
-    vanky   = { melee = { 16, 20 }, gun = { 3, 5 }, bow = { 8, 10 } },
-    vtrex   = { melee = { 25, 30 }, gun = { 5, 8 }, bow = { 12, 15 } },
+    vraptor = { melee = { 5, 7 },   gun = { 1, 1.5 },   bow = { 2, 3 } },
+    vpachy  = { melee = { 5, 7 },   gun = { 1, 1.5 },   bow = { 2, 4 } },
+    vcarno  = { melee = { 7, 10 },  gun = { 1.5, 2 },   bow = { 4, 5 } },
+    vstego  = { melee = { 10, 13 }, gun = { 2, 3 },     bow = { 5, 7 } },
+    vanky   = { melee = { 11, 14 }, gun = { 2, 4 },     bow = { 6, 8 } },
+    vtrex   = { melee = { 18, 21 }, gun = { 4, 6 },     bow = { 9, 11 } },
 }
-local DEFAULT_HITS = { melee = { 10, 14 }, gun = { 2, 3 }, bow = { 5, 7 } }
+local DEFAULT_HITS = { melee = { 7, 10 }, gun = { 1.5, 2 }, bow = { 4, 5 } }
 -- weapon MaxDamage that maps to the weak / strong end of each range
 local DMG_SPAN = { melee = { 0.6, 3.0 }, gun = { 1.0, 2.2 }, bow = { 0.5, 1.4 } }
 local CLOSE_KILL_HITS = 2          -- a chin stab is worth this many melee hits
@@ -32,7 +34,7 @@ local DETECT_RATIO = 100           -- melee hit >= this x weapon max damage = cl
 local DELAY_MS = 350               -- ranged top-up runs after the mod's shot + toughness settle
 local SHOT_DEDUPE_MS = 250         -- one ranged hit per shooter+target per window (pellets, echoes)
 
-local LOG_ALL_HITS = true          -- TEMPORARY: log every hit on a dino while tuning
+local LOG_ALL_HITS = false         -- true logs every hit on a dino (tuning aid)
 
 local function log(msg) print("[PE-Damage] " .. msg) end
 local function clamp(v, lo, hi) if v < lo then return lo elseif v > hi then return hi end return v end
@@ -142,10 +144,112 @@ local function onTick()
     for k, ts in pairs(lastShot) do if now - ts > 5000 then lastShot[k] = nil end end
 end
 
+-- ===== Player-side mercy (2026-09-27) ==========================================================
+-- Pachy charges knock the player down on every hit, and packs chained knockdowns into a stunlock.
+-- Wraps the dino mod's player damage functions (VDinoPlayerDamage, global) at server start:
+--   * a knockdown only lands KNOCKDOWN_CHANCE of the time (otherwise just the push), and never
+--     within KNOCKDOWN_IMMUNE_MS of the player's last knockdown;
+--   * for DOWN_GRACE_MS after a knockdown, small-dino damage is x DOWN_GRACE_MULT;
+--   * pack mercy: with more than PACK_FREE raptors/pachys within PACK_RADIUS tiles, each extra one
+--     takes PACK_STEP off their damage (never below PACK_FLOOR).
+-- Exact-damage bites (the T-Rex instakill) are never touched.
+local KNOCKDOWN_CHANCE = 0.5
+local KNOCKDOWN_IMMUNE_MS = 8000
+local DOWN_GRACE_MS = 3000
+local DOWN_GRACE_MULT = 0.5
+local PACK_RADIUS = 4
+local PACK_FREE = 2
+local PACK_STEP = 0.15
+local PACK_FLOOR = 0.55
+local SMALL = { vraptor = true, vpachy = true }
+
+local lastKnockdown = {}   -- username -> ms
+
+local function smallDinosNear(player)
+    local cell = getCell()
+    local animals = cell and cell:getAnimals()
+    if not animals then return 0 end
+    local px, py, r2, n = player:getX(), player:getY(), PACK_RADIUS * PACK_RADIUS, 0
+    for i = 0, animals:size() - 1 do
+        local a = animals:get(i)
+        if a and not a:isDead() and SMALL[tostring(a:getAnimalType())]
+                and (a:getX() - px) ^ 2 + (a:getY() - py) ^ 2 <= r2 then n = n + 1 end
+    end
+    return n
+end
+
+-- Damage multiplier for a hit on this player right now (pack mercy x knockdown grace).
+local function mercy(player)
+    local mult = 1.0
+    local n = smallDinosNear(player)
+    if n > PACK_FREE then mult = math.max(PACK_FLOOR, 1.0 - PACK_STEP * (n - PACK_FREE)) end
+    local down = lastKnockdown[nameOf(player)]
+    if down and getTimestampMs() - down < DOWN_GRACE_MS then mult = mult * DOWN_GRACE_MULT end
+    return mult, n
+end
+
+local function wrapPlayerDamage()
+    local PD = VDinoPlayerDamage
+    if not (PD and PD.health and PD.bite and PD.scratch) then
+        log("ERROR: VDinoPlayerDamage not loaded, knockdown/pack mercy NOT active")
+        return
+    end
+    if PD.PEWrapped then return end
+    local health, bite, scratch = PD.health, PD.bite, PD.scratch
+
+    PD.health = function(player, amount, knockdown, impact)
+        if player and not player:isDead() then
+            local mult = mercy(player)
+            amount = (tonumber(amount) or 0) * mult
+            if knockdown then
+                local name, now = nameOf(player), getTimestampMs()
+                local last = lastKnockdown[name]
+                if (last and now - last < KNOCKDOWN_IMMUNE_MS) or ZombRandFloat(0, 1) >= KNOCKDOWN_CHANCE then
+                    knockdown = false
+                    if LOG_ALL_HITS then log(string.format("knockdown skipped for %s (x%.2f dmg)", name, mult)) end
+                else
+                    lastKnockdown[name] = now
+                    if LOG_ALL_HITS then log(string.format("knockdown on %s (x%.2f dmg)", name, mult)) end
+                end
+            end
+        end
+        return health(player, amount, knockdown, impact)
+    end
+
+    local function softened(fn)
+        return function(player, options)
+            options = options or {}
+            if player and not player:isDead() and not tonumber(options.exactHealthDamage) then
+                local mult, n = mercy(player)
+                if mult < 1.0 then
+                    local o = {}
+                    for k, v in pairs(options) do o[k] = v end
+                    o.healthMultiplier = (tonumber(o.healthMultiplier) or 1.0) * mult
+                    o.woundMultiplier = (tonumber(o.woundMultiplier) or 1.0) * mult
+                    options = o
+                    if LOG_ALL_HITS then log(string.format("pack mercy on %s: %d small dinos, x%.2f", nameOf(player), n, mult)) end
+                end
+            end
+            return fn(player, options)
+        end
+    end
+    PD.bite = softened(bite)
+    PD.scratch = softened(scratch)
+    PD.PEWrapped = true
+    log(string.format("player mercy active: knockdown %d%% + %ds immunity, %ds down-grace x%.1f, pack mercy -%d%%/dino past %d (floor x%.2f)",
+        KNOCKDOWN_CHANCE * 100, KNOCKDOWN_IMMUNE_MS / 1000, DOWN_GRACE_MS / 1000, DOWN_GRACE_MULT,
+        PACK_STEP * 100, PACK_FREE, PACK_FLOOR))
+end
+
+Events.OnServerStarted.Add(function()
+    local ok, err = pcall(wrapPlayerDamage)
+    if not ok then log("mercy wrap error: " .. tostring(err)) end
+end)
+
 if Hook and Hook.WeaponHitCharacter then
     Hook.WeaponHitCharacter.Add(onWeaponHitCharacter)
     Events.OnTick.Add(onTick)
-    log("dino damage model active: raptor melee 7-10 hits, guns 1-2 shots, bows 3-4; close kill = "
+    log("dino damage model active: raptor melee 5-7 hits, guns 1-1.5 shots, bows 2-3; close kill = "
         .. CLOSE_KILL_HITS .. " melee hits" .. (LOG_ALL_HITS and "; logging every hit (temporary)" or ""))
 else
     log("ERROR: Hook.WeaponHitCharacter not available, damage model NOT active")

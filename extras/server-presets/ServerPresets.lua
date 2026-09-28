@@ -93,6 +93,24 @@ local function applyZones()
     log("safezones done, created " .. made .. ", total safehouses now " .. tostring(SafeHouse.getSafehouseList():size()))
 end
 
+-- Lock the dino settings to these presets. Irish's Dinosaurs' client options push a joining ADMIN's
+-- local options to the server on every game start (ZZ_VRaptor_Options: OnGameStart -> "VDinosaur"/
+-- "SetOptions"), and the server saves them into the world, so an admin with a fresh client silently
+-- resets every tuned value to the mod defaults. With this, nobody can change them in game; the client
+-- asks the server for its settings on join and shows those. Tune here and bump PRESET_VERSION.
+local function lockDinoOptions()
+    if not (VDinoServerSettings and VDinoServerSettings.canEdit) or VDinoServerSettings.presetsLocked then return end
+    VDinoServerSettings.presetsLocked = true
+    VDinoServerSettings.canEdit = function(player)
+        local ok, name = pcall(function() return player:getUsername() end)
+        log("ignored in-game dino options from " .. tostring(ok and name or "?") .. " (the presets rule)")
+        return false
+    end
+    log("dino options locked to the presets")
+end
+lockDinoOptions()
+Events.OnServerStarted.Add(lockDinoOptions)
+
 Events.OnInitGlobalModData.Add(applyDino)
 Events.OnServerStarted.Add(function()
     local ok, err = pcall(applyZones)

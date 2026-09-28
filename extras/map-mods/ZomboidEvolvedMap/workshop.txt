@@ -1,8 +1,9 @@
 version=1
+id=3809694123
 title=Zomboid Evolved Map
 description=Replaces the in-game world map and minimap with the painted Zomboid Evolved map - the same map as the live map at zomboid.wubcord.app - with the game's own street and place names on top.
 description=
-description=[list][*]World map and minimap only; printed and stash maps are unchanged.[*]Areas outside the painted map fall back to the vanilla terrain image.[*]Players can switch back to the vanilla map in Options > Mods > Zomboid Evolved Map.[/list]
+description=[list][*]World map and minimap only; printed and stash maps are unchanged.[*]Areas outside the painted map fall back to the vanilla terrain image.[*]Server browser branding: the Zomboid Evolved badge and a painted-map banner for the server in Favorites and the public list (only while the mod is enabled in the main-menu Mods list).[*]Checkpoint lamps: lights the lamps at the server's sandbag checkpoints (steady lamplight, nothing to take).[*]Every part can be switched off in Options > Mods > Zomboid Evolved Map.[/list]
 description=Made for Zomboid Evolved - A Wubcord World. Build 42.
 tags=Build 42;Interface;Map
 visibility=public
