@@ -3,5 +3,5 @@ id=ZomboidEvolvedMap
 author=ScottishHaze
 poster=poster.png
 description=The client side of Zomboid Evolved - A Wubcord World (formerly Zomboid Evolved Map). The painted Zomboid Evolved world map and minimap (same as zomboid.wubcord.app), the safe zone banner with the Front Lines retreat timer (needs Aegis), the lamp guns' light, and the server browser badge. Each part can be toggled off in Options > Mods > Zomboid Evolved Core. Also carries a small server-side loader for the Zomboid Evolved server (inactive on players' games).
-modversion=1.4.0
+modversion=1.4.4
 versionMin=42.19.0

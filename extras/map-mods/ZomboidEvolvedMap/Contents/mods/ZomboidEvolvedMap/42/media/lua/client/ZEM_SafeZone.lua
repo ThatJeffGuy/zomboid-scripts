@@ -1,6 +1,6 @@
 -- ZEM_SafeZone.lua  (client)
 -- The camps' shrinking safe zones get the same slide-in banner as the Aegis rule zones (the user's ask,
--- 2026-09-29): hop the sandbag ring on the standing defense line and "Safe Zone - Camp Amber" slides in,
+-- 2026-09-29): hop the sandbag ring on the standing defense line and "Amber Safe Zone" slides in,
 -- leave and "Left ..." slides in. The server keeps the numbers in the global ModData "PESafeZone"
 -- (line = the standing ring's radius, fallsAt, camps; see PE_SafePath.lua on the server).
 -- How: Aegis's client (AegisRuleZonesClient) asks zoneAt(x, y) twice a second and shows its banner when
@@ -36,15 +36,27 @@ local function countdown(seconds)
     return string.format("%dm", m)
 end
 
--- The camp whose standing ring (x, y) is inside, or nil.
+-- The camp whose standing ring (x, y) is inside, or nil. A little slack on the way out (EXIT_SLACK
+-- tiles past the ring) so hopping the sandbags or walking along the ring doesn't flicker the banner
+-- in and out (the user saw it twice running straight across).
+local EXIT_SLACK = 4
+local insideCamp = nil
 local function campAt(x, y)
     if not zone or type(zone.camps) ~= "table" then return nil end
     if option and option:getValue() == false then return nil end
     local R = tonumber(zone.line)
     if not R then return nil end
+    -- the slack only applies to the local player's own square (Aegis also asks about zombies' squares)
+    local p = getPlayer()
+    local self = p and math.floor(p:getX()) == x and math.floor(p:getY()) == y
     for i, c in ipairs(zone.camps) do
-        if (x + 0.5 - c.x) ^ 2 + (y + 0.5 - c.y) ^ 2 < R * R then return i, c end
+        local r = (self and i == insideCamp) and (R + EXIT_SLACK) or R
+        if (x + 0.5 - c.x) ^ 2 + (y + 0.5 - c.y) ^ 2 < r * r then
+            if self then insideCamp = i end
+            return i, c
+        end
     end
+    if self then insideCamp = nil end
     return nil
 end
 
@@ -52,7 +64,10 @@ local function fakeZone(i, c)
     local z = fake[i]
     if not z then
         -- colour 1 is Aegis's red; every rule flag off, so Aegis enforces nothing here
-        z = { id = "zesafe" .. i, name = "Safe Zone - " .. tostring(c.name), color = 1, zeSafe = true,
+        -- "Driftwood Safe Zone", never "Camp ...": the camp itself (its Aegis zone) is "Camp Driftwood",
+        -- and the two read as one place when both start with the camp (the user, 2026-09-29)
+        local short = tostring(c.name):gsub("^Camp%s+", "")
+        z = { id = "zesafe" .. i, name = short .. " Safe Zone", color = 1, zeSafe = true,
               pvp = 0, zombies = 0, npcs = 0, build = 0, fire = 0, alarm = 0, power = 0, water = 0, rects = {} }
         fake[i] = z
     end
@@ -63,12 +78,26 @@ local function wrap()
     local A = AegisRuleZonesClient
     if not A or A.zeSafeWrapped then return A ~= nil end
     local zoneAt, ruleLabels = A.zoneAt, A.ruleLabels
+    -- One banner per safe zone (the user, 2026-09-29: the camp's own banner inside the safe zone read as
+    -- a second zone, and walking out of the camp showed the safe zone banner again). Inside a ring the
+    -- answer is always that camp's safe zone, same id throughout, so Aegis sees no change at the camp
+    -- edge. Inside the camp itself it carries the camp zone's rule flags, so Aegis's client-side
+    -- zombie/NPC wall at the camp keeps working (the server enforces the camp rules on its own).
+    local merged = {}
     A.zoneAt = function(x, y)
         local z = zoneAt(x, y)
-        if z then return z end
         local i, c = campAt(x, y)
-        if i then return fakeZone(i, c) end
-        return nil
+        if not i then return z end
+        local f = fakeZone(i, c)
+        if not z then return f end
+        local m = merged[i]
+        if not m or m.src ~= z then
+            m = { id = f.id, name = f.name, color = f.color, zeSafe = true, src = z, rects = z.rects,
+                  pvp = z.pvp, zombies = z.zombies, npcs = z.npcs, build = z.build, fire = z.fire,
+                  alarm = z.alarm, power = z.power, water = z.water }
+            merged[i] = m
+        end
+        return m
     end
     A.ruleLabels = function(z)
         if not (z and z.zeSafe) then return ruleLabels(z) end

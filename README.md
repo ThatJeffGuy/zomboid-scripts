@@ -185,6 +185,7 @@ all. Run it every 5 minutes from root's crontab:
     a sandbag checkpoint (two walls across the road, a nest on each shoulder
     with a lamp), the gaps between them get lamp guns three tiles in, and every
     lit lamp is secretly a gun that shoots dinos and hostile bandits near it.
+    A dino the guns miss is not despawned any more: it stays in the camp.
     Kills are announced per camp team ("Alpha Team killed a raptor"). An
     optional sandbag wall round each camp is in the file, switched off
     (`WALLS_ENABLED`).
@@ -239,7 +240,10 @@ all. Run it every 5 minutes from root's crontab:
   crossing a Front Lines sandbag ring slide in an Aegis-style banner ("Safe
   Zone - Camp ...", the zone's rules and the retreat timer) by wrapping
   `AegisRuleZonesClient.zoneAt`, and shows the server's "not allowed here"
-  messages. Both mods carry a small server-browser
+  messages. Inside a ring the whole safe zone, camp included, reads as one zone
+  (one banner in, one out, with a little slack at the sandbags). Its
+  `shared/ZEM_ModFixes.lua` adds `IsoPlayer:setAnimVariable` (passing through to
+  `setVariable`) so Archery Nexus's bow-equip handler stops erroring on B42.21. Both mods carry a small server-browser
   branding script (`*_MenuBranding.lua`: a badge and banner on their server's
   row); its images are not committed, and `COTM_MenuBranding.lua` has
   placeholder host/IP values.
