@@ -1,7 +1,7 @@
 -- Zomboid Evolved menu branding: puts the Zomboid Evolved badge on the server's row in the
 -- multiplayer browser (Favorites and the public list) and in its details panel (with a strip of the
 -- painted map as the banner). It only shows while this mod is enabled in the main-menu Mods list,
--- and can be switched off in Options > Mods > Zomboid Evolved Map. The main-menu Project Zomboid logo
+-- and can be switched off in Options > Mods > Zomboid Evolved Core. The main-menu Project Zomboid logo
 -- is left alone (the user's call, 2026-09-28).
 require "ZEM_WorldMap"
 require "OptionScreens/MultiplayerUI"

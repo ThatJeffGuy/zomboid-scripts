@@ -1,9 +1,9 @@
 version=1
 id=3809694123
-title=Zomboid Evolved Map
-description=Replaces the in-game world map and minimap with the painted Zomboid Evolved map - the same map as the live map at zomboid.wubcord.app - with the game's own street and place names on top.
+title=Zomboid Evolved Core
+description=The client side of Zomboid Evolved - A Wubcord World: the painted world map, the Front Lines, and the lamps that keep the dinosaurs out. Required to play on the server.
 description=
-description=[list][*]World map and minimap only; printed and stash maps are unchanged.[*]Areas outside the painted map fall back to the vanilla terrain image.[*]Server browser branding: the Zomboid Evolved badge and a painted-map banner for the server in Favorites and the public list (only while the mod is enabled in the main-menu Mods list).[*]Checkpoint lamps: lights the lamps at the server's sandbag checkpoints (steady lamplight, nothing to take).[*]Every part can be switched off in Options > Mods > Zomboid Evolved Map.[/list]
-description=Made for Zomboid Evolved - A Wubcord World. Build 42.
-tags=Build 42;Interface;Map
+description=[list][*]World map: the in-game world map and minimap show the painted Zomboid Evolved map (the same map as the live map at zomboid.wubcord.app) with the game's own street and place names on top. Printed and stash maps are unchanged; areas outside the painted map fall back to the vanilla terrain image.[*]Safe zone banner: crossing the sandbag ring into or out of a camp's shrinking safe zone slides in a banner (Aegis style) with the zone's rules and the Front Lines retreat timer, and says so when the server refuses building or destroying there. Needs Aegis.[*]Checkpoint lamps: lights the lamp guns on the Front Lines and at the camp checkpoints (steady lamplight, nothing to take), with the shot and muzzle flash when one fires.[*]Server browser branding: the Zomboid Evolved badge and a painted-map banner for the server in Favorites and the public list (only while the mod is enabled in the main-menu Mods list).[*]Every part can be switched off in Options > Mods > Zomboid Evolved Core.[/list]
+description=Formerly "Zomboid Evolved Map" - same mod, same ID, nothing to change in your mod list. Made for Zomboid Evolved - A Wubcord World. Build 42.
+tags=Build 42;Interface;Map;Multiplayer
 visibility=public

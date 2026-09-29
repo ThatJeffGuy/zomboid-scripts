@@ -1,9 +1,9 @@
--- Zomboid Evolved Map: draws the Zomboid Evolved painted map (zomboid.wubcord.app) as the
+-- Zomboid Evolved Core (was "Zomboid Evolved Map"; mod id unchanged): draws the Zomboid Evolved painted map (zomboid.wubcord.app) as the
 -- in-game world map and minimap, with the game's own street and place names on top.
 --
 -- The art ships as a B42 image pyramid (media/maps/zevolved.pyramid.zip). Areas the art does
 -- not cover fall back to the game's own terrain image. Printed/stash maps are left vanilla.
--- Players can switch back to the vanilla map in Options > Mods > Zomboid Evolved Map.
+-- Players can switch back to the vanilla map in Options > Mods > Zomboid Evolved Core.
 require "ISUI/Maps/ISMapDefinitions"
 
 local MOD_ID = "ZomboidEvolvedMap"
@@ -12,7 +12,7 @@ local PYRAMID = "zevolved.pyramid.zip"
 ZomboidEvolvedMap = ZomboidEvolvedMap or {}
 local ZEM = ZomboidEvolvedMap
 
-ZEM.options = PZAPI.ModOptions:create(MOD_ID, "Zomboid Evolved Map")
+ZEM.options = PZAPI.ModOptions:create(MOD_ID, "Zomboid Evolved Core")
 ZEM.useArt = ZEM.options:addTickBox("useArt", "Use the Zomboid Evolved map art", true,
     "Draw the painted Zomboid Evolved map in the world map and minimap (reopen the map to apply).")
 -- used by ZEM_MenuBranding.lua (server browser only)

@@ -37,7 +37,13 @@ local SANDBAG_KEEP = 0.4              -- share of sandbags still standing in a r
 local RUIN_ROLLS_MIN, RUIN_ROLLS_MAX = 3, 6
 
 local SANDBAG_N, SANDBAG_W = "carpentry_02_13", "carpentry_02_12"   -- entity SandbagWall faces N / W
-local SEG_LEN = 5                     -- sandbags in a single-row gate
+local SEG_LEN = 5                     -- sandbags in a single-row gate (samples only since v2)
+-- v2 (2026-09-29, the user): every line is now a continuous sandbag ring (ring walls below), so a
+-- "gate" slot is just its lamp gun, LAMP_INSET tiles inside the ring so it no longer sits in the bags.
+-- Older slots are torn down and re-planned when a player comes by.
+local SEG_VER = 2
+local LAMP_INSET = 3
+local MAX_WALL_PER_TICK = 300         -- ring wall pieces placed/knocked down per tick
 local LAMP = "carpentry_02_59"        -- wooden lamp pillar (entity WoodLampPillar, face S); decoration only
 local CHECK_MAX_ROAD = 8              -- widest road that gets a checkpoint (same cap as the camp gates)
 local CHECK_SPACING = 12              -- two checkpoints on one ring are at least this far apart
@@ -72,6 +78,7 @@ local function data()
     if type(md.fallen) ~= "table" then md.fallen = {} end
     if type(md.samples) ~= "table" then md.samples = {} end
     if type(md.checkpoints) ~= "table" then md.checkpoints = {} end
+    if type(md.walls) ~= "table" then md.walls = {} end
     return md
 end
 
@@ -316,51 +323,37 @@ local function placeAll(parts, onlyMissing)
 end
 
 -- Layouts ------------------------------------------------------------------------------------------------
--- Single-row gate: SEG_LEN sandbags along the ring on the N (horizontal) or W (vertical) edges of the row
--- through (cx, cy), and a lamp post on the camp side of the middle bag. horizontal = the ring runs along
--- x here (a north or south stretch). campSide = +1 when the camp lies toward +y (horizontal) / +x.
--- Returns parts and the lamp square.
+-- A gate slot (v2): one lamp gun LAMP_INSET tiles inside the ring from (cx, cy), toward the camp.
+-- horizontal = the ring runs along x here (a north or south stretch). campSide = +1 when the camp lies
+-- toward +y (horizontal) / +x. Returns parts and the lamp square.
 local function segmentParts(cx, cy, horizontal, campSide)
-    local parts, half = {}, math.floor(SEG_LEN / 2)
-    for i = -half, half do
-        if horizontal then parts[#parts + 1] = { x = cx + i, y = cy, z = 0, s = SANDBAG_N, k = "bag" }
-        else parts[#parts + 1] = { x = cx, y = cy + i, z = 0, s = SANDBAG_W, k = "bag" } end
-    end
-    local lx, ly = cx, cy                 -- the edge lies between cy - 1 and cy (cx - 1 and cx)
-    if horizontal then ly = campSide > 0 and cy or cy - 1 else lx = campSide > 0 and cx or cx - 1 end
-    parts[#parts + 1] = { x = lx, y = ly, z = 0, s = LAMP, k = "lamp" }
-    return parts, lx, ly
+    local lx, ly = cx, cy
+    if horizontal then ly = cy + campSide * LAMP_INSET else lx = cx + campSide * LAMP_INSET end
+    return { { x = lx, y = ly, z = 0, s = LAMP, k = "lamp" } }, lx, ly
 end
 
--- The row's squares and the squares on both sides of its edge must be clear (and outside safehouses).
-local function segmentOk(cx, cy, horizontal)
-    local half = math.floor(SEG_LEN / 2)
-    local x1, y1, w, h
-    if horizontal then x1, y1, w, h = cx - half, cy - 1, SEG_LEN, 2 else x1, y1, w, h = cx - 1, cy - half, 2, SEG_LEN end
-    local okS, sh = pcall(function() return SafeHouse.getSafeHouse(x1, y1, w, h) end)
+-- The lamp square must be clear and outside safehouses.
+local function segmentOk(cx, cy, horizontal, campSide)
+    local lx, ly = cx, cy
+    if horizontal then ly = cy + campSide * LAMP_INSET else lx = cx + campSide * LAMP_INSET end
+    local okS, sh = pcall(function() return SafeHouse.getSafeHouse(lx, ly, 1, 1) end)
     if okS and sh then return false end
-    local cell = getCell()
-    for dx = 0, w - 1 do
-        for dy = 0, h - 1 do
-            if not squareOk(cell:getGridSquare(x1 + dx, y1 + dy, 0)) then return false end
-        end
-    end
-    return true
+    return squareOk(getCell():getGridSquare(lx, ly, 0))
 end
 
--- A single-row gate as near (px, py) as fits: parts, lamp x, lamp y; nil if none fits, false if not loaded.
+-- A gate as near (px, py) as fits: parts, lamp x, lamp y; nil if none fits, false if not loaded.
 -- zc = the camp it guards (the lamp goes on that side).
 local function planSegment(px, py, horizontal, zc)
     local bx, by = math.floor(px), math.floor(py)
-    if not boxLoaded(bx - SEARCH - 3, by - SEARCH - 3, bx + SEARCH + 3, by + SEARCH + 3) then return false end
+    if not boxLoaded(bx - SEARCH - 4, by - SEARCH - 4, bx + SEARCH + 4, by + SEARCH + 4) then return false end
     for r = 0, SEARCH do
         for dx = -r, r do
             for dy = -r, r do
-                if (math.abs(dx) == r or math.abs(dy) == r) and segmentOk(bx + dx, by + dy, horizontal) then
+                if math.abs(dx) == r or math.abs(dy) == r then
                     local cx, cy = bx + dx, by + dy
                     local campSide
                     if horizontal then campSide = zc[2] >= cy and 1 or -1 else campSide = zc[1] >= cx and 1 or -1 end
-                    return segmentParts(cx, cy, horizontal, campSide)
+                    if segmentOk(cx, cy, horizontal, campSide) then return segmentParts(cx, cy, horizontal, campSide) end
                 end
             end
         end
@@ -521,13 +514,22 @@ local function workSlot(md, zi, zc, R, k, n, rstate)
     local key = zi .. ":" .. R .. ":" .. k
     local slot = md.slots[key]
     local st = slot and slot.state
+    if rstate == "active" and (st == "post" or st == "none") and slot.ver ~= SEG_VER then
+        -- an older layout (sandbag row + lamp in the bags): take it down, plan the v2 lamp
+        if st == "post" then
+            if not boxLoaded(slot.x - 8, slot.y - 8, slot.x + 8, slot.y + 8) then return false end
+            clearParts(slot.parts)
+        end
+        md.slots[key] = nil
+        slot, st = nil, nil
+    end
     if rstate == "active" then
         if st then return false end
         local plan, lx, ly = ringSegment(zc, R, k, n)
         if plan == false then return false end                -- not loaded yet
-        if not plan then md.slots[key] = { state = "none" } return true end
+        if not plan then md.slots[key] = { state = "none", ver = SEG_VER } return true end
         local parts = placeAll(plan)
-        md.slots[key] = { state = "post", x = lx, y = ly, parts = parts }
+        md.slots[key] = { state = "post", x = lx, y = ly, parts = parts, ver = SEG_VER }
         log(string.format("gate %s built at %d,%d (%d pieces)", key, lx, ly, #parts))
         return true
     elseif rstate == "ruin" then
@@ -556,6 +558,122 @@ local function workSlot(md, zi, zc, R, k, n, rstate)
         return true
     end
     return false
+end
+
+-- Ring walls ----------------------------------------------------------------------------------------------
+-- The user's design (2026-09-29): a continuous sandbag wall round every camp on each line, falling with it.
+-- The wall follows the circle as a staircase of sandbag edges: a north-edge piece wherever a square and the
+-- one north of it lie on different sides of the circle, a west-edge piece likewise with the square to the
+-- west. Roads are left to the checkpoints (two walls across, like a real crossing); buildings, water and
+-- anything a player placed stay open. md.walls["zi:R"].p["x,y,N|W"] = "s" standing, "k" kept as a ruin,
+-- "x" knocked down / never built, "o" no room.
+local function wallSquareFree(sq)
+    if not sq or sq:getRoom() then return false end
+    local props = sq:getProperties()
+    if props and props:has(IsoFlagType.water) then return false end
+    local objs = sq:getObjects()
+    for i = 0, objs:size() - 1 do
+        local o = objs:get(i)
+        local spr = o:getSprite()
+        local name = spr and spr:getName() or ""
+        if name:find("street") then return false end
+        local p = spr and spr:getProperties()
+        if not (p and p:has(IsoFlagType.solidfloor)) and not isNatural(o)
+                and name ~= SANDBAG_N and name ~= SANDBAG_W then return false end
+    end
+    return true
+end
+
+-- The wall pieces of ring R round zc within NEAR of (px, py): { x, y, s, key }.
+local function ringWallPieces(zc, R, px, py)
+    local cx, cy = zc[1], zc[2]
+    local function inside(x, y) return (x + 0.5 - cx) ^ 2 + (y + 0.5 - cy) ^ 2 < R * R end
+    local out, seen = {}, {}
+    local function edge(x, y, dir)
+        local key = x .. "," .. y .. "," .. dir
+        if seen[key] then return end
+        seen[key] = true
+        local nx, ny = x, y
+        if dir == "N" then ny = y - 1 else nx = x - 1 end
+        if inside(x, y) ~= inside(nx, ny) and (x - px) ^ 2 + (y - py) ^ 2 <= NEAR * NEAR then
+            out[#out + 1] = { x = x, y = y, z = 0, s = dir == "N" and SANDBAG_N or SANDBAG_W, k = "bag", key = key }
+        end
+    end
+    local phi = math.atan2(py - cy, px - cx)
+    local span = math.min(math.pi, NEAR / R + 0.05)
+    local a = phi - span
+    while a <= phi + span do
+        local x, y = math.floor(cx + R * math.cos(a)), math.floor(cy + R * math.sin(a))
+        for dx = 0, 1 do
+            for dy = 0, 1 do
+                edge(x + dx, y + dy, "N")
+                edge(x + dx, y + dy, "W")
+            end
+        end
+        a = a + 0.5 / R
+    end
+    return out
+end
+
+-- Builds, knocks down or clears ring R's wall near (px, py). Returns the pieces changed.
+local function workWall(md, zi, zc, R, rstate, px, py, budget)
+    local key = zi .. ":" .. R
+    md.walls[key] = md.walls[key] or { p = {} }
+    local wp = md.walls[key].p
+    local n = 0
+    for _, piece in ipairs(ringWallPieces(zc, R, px, py)) do
+        if n >= budget then break end
+        local st = wp[piece.key]
+        local sq = getCell():getGridSquare(piece.x, piece.y, 0)
+        if sq then
+            if rstate == "active" then
+                if st == nil then
+                    if wallSquareFree(sq) then
+                        if not hasSprite(sq, piece.s) then clearPlants(sq) placeTile(piece) end
+                        wp[piece.key] = "s"
+                    else
+                        wp[piece.key] = "o"
+                    end
+                    n = n + 1
+                end
+            elseif rstate == "ruin" then
+                if st == "s" then
+                    if ZombRandFloat(0, 1) < SANDBAG_KEEP then wp[piece.key] = "k" else removePart(piece) wp[piece.key] = "x" end
+                    n = n + 1
+                elseif st == nil then                          -- fell before anyone saw it standing
+                    if ZombRandFloat(0, 1) < SANDBAG_KEEP and wallSquareFree(sq) then
+                        clearPlants(sq)
+                        placeTile(piece)
+                        wp[piece.key] = "k"
+                    else
+                        wp[piece.key] = "x"
+                    end
+                    n = n + 1
+                end
+            elseif rstate == "gone" then
+                if st == "s" or st == "k" then
+                    removePart(piece)
+                    wp[piece.key] = "x"
+                    n = n + 1
+                end
+            end
+        end
+    end
+    return n
+end
+
+-- Puts back knocked-down pieces of a standing ring wall near a player.
+local function repairWall(md, zi, zc, R, px, py)
+    local wp = md.walls[zi .. ":" .. R] and md.walls[zi .. ":" .. R].p
+    if not wp then return 0 end
+    local n = 0
+    for _, piece in ipairs(ringWallPieces(zc, R, px, py)) do
+        if wp[piece.key] == "s" then
+            local sq = getCell():getGridSquare(piece.x, piece.y, 0)
+            if sq and not hasSprite(sq, piece.s) and placeTile(piece) then n = n + 1 end
+        end
+    end
+    return n
 end
 
 -- Checkpoints on the rings ----------------------------------------------------------------------------------
@@ -655,7 +773,8 @@ local function announce(md, radius)
         if R > active and not md.fallen[tostring(R)] then
             md.fallen[tostring(R)] = true
             if md.initialized then
-                say(string.format("The defense line %d tiles out has fallen. The camps hold the line at %d tiles now; the old posts lie in ruins.", R, active))
+                local t = PELineTexts and PELineTexts[R]
+                say(t and t.fallen or string.format("The defense line %d tiles out has fallen. The camps hold the line at %d tiles now; the old posts lie in ruins.", R, active))
                 log(string.format("line %d collapsed (safe radius %.0f)", R, radius))
             end
         end
@@ -703,6 +822,7 @@ local function upkeep(md, players, radius, days, nowMs)
 end
 
 local lastTick = 0
+local lastWallRepair, wallRepair = 0, false
 local function tick(nowMs)
     local h = heat()
     if not (h and h.safeRadius and h.serverDays and h.ZONES) then return end
@@ -712,7 +832,9 @@ local function tick(nowMs)
     local players = getOnlinePlayers()
     if not players or players:size() == 0 then return end
     upkeep(md, players, radius, days, nowMs)
-    local work = 0
+    local work, wallWork = 0, 0
+    wallRepair = nowMs - lastWallRepair >= REPAIR_SECONDS * 1000
+    if wallRepair then lastWallRepair = nowMs end
     for i = 0, players:size() - 1 do
         local p = players:get(i)
         if p and not p:isDead() then
@@ -735,6 +857,12 @@ local function tick(nowMs)
                                 end
                             end
                             if rstate ~= "future" then
+                                local changed = workWall(md, zi, zc, R, rstate, px, py, MAX_WALL_PER_TICK - wallWork)
+                                wallWork = wallWork + changed
+                                if rstate == "active" and wallRepair then
+                                    local fixed = repairWall(md, zi, zc, R, px, py)
+                                    if fixed > 0 then log(string.format("ring wall %d:%d repaired: %d piece(s)", zi, R, fixed)) end
+                                end
                                 local n = slotCount(R)
                                 local k0 = math.floor(phi / (2 * math.pi) * n + 0.5)
                                 local span = math.ceil(NEAR / (2 * math.pi * R / n)) + 1
@@ -763,6 +891,7 @@ PEDefenseLine = { activeRing = activeRing, ringState = ringState, collapseDay = 
                   rollItem = rollItem, segmentParts = segmentParts, planSegment = planSegment,
                   checkpointParts = checkpointParts,
                   placeAll = placeAll, clearParts = clearParts, repairParts = repairParts, setLight = setLight,
+                  SEG_VER = SEG_VER, LAMP_INSET = LAMP_INSET,
                   crossingAt = crossingAt, ruinFrom = ruinFrom }
 
 Events.OnTick.Add(function()

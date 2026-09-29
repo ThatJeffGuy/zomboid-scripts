@@ -183,15 +183,36 @@ all. Run it every 5 minutes from root's crontab:
     inside a camp core are shot (a real corpse); hunt and raid packs meet a
     small ammo pool that reloads every few seconds. Every road into a camp gets
     a sandbag checkpoint (two walls across the road, a nest on each shoulder
-    with a lamp), the gaps between them get single-row sandbag gates, and every
+    with a lamp), the gaps between them get lamp guns three tiles in, and every
     lit lamp is secretly a gun that shoots dinos and hostile bandits near it.
-    Kills are announced per camp team ("Alpha Team killed a raptor").
-  - `PE_DefenseLine.lua` -- collapsing defense lines: every 50 tiles of radius a
-    ring of sandbag gates (a checkpoint where a road crosses it) stands just
-    inside the safe radius, falls into lootable ruins when the radius passes it,
-    and is cleared 3 days later. Built lazily near players and only on loaded,
-    clear ground. It also keeps the lamp list (global ModData `PELights`) that
-    the map mod's `ZEM_Lights.lua` turns into light on every client.
+    Kills are announced per camp team ("Alpha Team killed a raptor"). An
+    optional sandbag wall round each camp is in the file, switched off
+    (`WALLS_ENABLED`).
+  - `PE_DefenseLine.lua` -- collapsing defense lines ("the Front Lines"): the
+    standing line is the outermost 50-tile ring still inside the safe radius. It
+    is a continuous sandbag wall round every camp (a staircase of sandbag edges
+    following the circle), with a checkpoint wherever a road crosses it and a
+    lamp gun every ~40 tiles three tiles inside. When the radius passes it, the
+    wall falls to ~40% standing ruins with a lootable crate per post, cleared 3
+    days later, and the next ring in goes up. Built lazily near players and only
+    on loaded, clear ground. It also keeps the lamp list (global ModData
+    `PELights`) that the map mod's `ZEM_Lights.lua` turns into light.
+  - `PE_SafeRules.lua` -- rules inside the standing line: no building, no
+    destroying (sledgehammer, dismantling, scrapping furniture), and fire burns
+    where it was started (any square it spreads to is put out). PvP and raiding
+    stay on, and beds, tents and campfires may be built anywhere so players can
+    sleep inside. In B42 multiplayer the server runs timed actions through
+    `serverStart`/`complete`, not `isValid`, so those are what it wraps;
+    admins are exempt. Also `day [hour]` and `heal <user>` test commands.
+  - `PE_SafePath.lua` -- the Front Lines' story: a different warning and
+    "fallen" message for every line (`PELineTexts`), a chat warning 6 hours
+    before a line falls, and the global ModData `PESafeZone` plus
+    `Zomboid/Lua/PE/safezone.json` (radius, standing line, when it falls, camp
+    centers) for the map mod's banner and the status page. Its gravel path
+    along the line is switched off (`PATH_ENABLED`).
+  - `PE_BanditWake.lua` -- works round a Bandits mod bug: the client's
+    `WakeEveryone` arrives with nil args and the mod's handler throws before
+    waking anyone, so this runs the wake-up itself.
   - `PE_AdminCmd.lua` -- a whitelisted command file (`Zomboid/Lua/PE/cmd.txt`)
     for testing things that need a player in game: spawn a dino or a Bandits
     clan near a player, list bandits and animal corpses, trigger a hunt or raid,
@@ -213,7 +234,12 @@ all. Run it every 5 minutes from root's crontab:
   that runs scripts from `Zomboid/Lua/ZomboidEvolved/` with `loadstring`
   (B42.21+), keeping them out of the checksum, and `ZEM_Lights.lua`, which draws
   a steady light at every checkpoint lamp the server lists and plays the lamp
-  guns' shots with a muzzle flash. Both mods carry a small server-browser
+  guns' shots with a muzzle flash. Its Workshop title is now "Zomboid Evolved
+  Core" (the mod ID is still `ZomboidEvolvedMap`), and `ZEM_SafeZone.lua` makes
+  crossing a Front Lines sandbag ring slide in an Aegis-style banner ("Safe
+  Zone - Camp ...", the zone's rules and the retreat timer) by wrapping
+  `AegisRuleZonesClient.zoneAt`, and shows the server's "not allowed here"
+  messages. Both mods carry a small server-browser
   branding script (`*_MenuBranding.lua`: a badge and banner on their server's
   row); its images are not committed, and `COTM_MenuBranding.lua` has
   placeholder host/IP values.

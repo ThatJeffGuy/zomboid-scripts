@@ -807,14 +807,26 @@ local function gateRect(g)
 end
 
 local function ensureSafehouse(g, idx)
-    if g.safehouse then return end
+    if g.safehouse then
+        local want = campName(idx) .. " Gate " .. tostring(g.side)
+        if g.title ~= want then                    -- the camps were renamed (2026-09-28)
+            local x, y, w, h = gateRect(g)
+            local ok, sh = pcall(function() return SafeHouse.getSafeHouse(x, y, w, h) end)
+            if ok and sh then
+                pcall(function() sh:setTitle(want) end)
+                log(string.format("%s gate %s: safehouse retitled", campName(idx), g.side))
+            end
+            g.title = want
+        end
+        return
+    end
     local x, y, w, h = gateRect(g)
     local ok, existing = pcall(function() return SafeHouse.getSafeHouse(x, y, w, h) end)
     if ok and existing then g.safehouse = true return end
     local ok2, sh = pcall(function() return SafeHouse.addSafeHouse(x, y, w, h, GATE_OWNER) end)
     if ok2 and sh then
         pcall(function() sh:setTitle(campName(idx) .. " Gate " .. tostring(g.side)) end)
-        g.safehouse = true
+        g.safehouse, g.title = true, campName(idx) .. " Gate " .. tostring(g.side)
         log(string.format("%s gate %s: safehouse %d,%d %dx%d owner=%s", campName(idx), g.side, x, y, w, h, GATE_OWNER))
     else
         log(string.format("%s gate %s: safehouse FAILED: %s", campName(idx), g.side, tostring(sh)))
@@ -903,11 +915,19 @@ local DOOR_N, DOOR_W = "walls_logs_41", "walls_logs_40"
 -- v2 (2026-09-28): a see-through fence that can't be climbed (CantClimb + Wall*Trans; only spears
 -- attack through). v1 was two storeys of solid log wall: the game blacks out everything a player can't
 -- see, so the camp read as a black void from outside (and the gate decks went black behind it).
-local WALL_VER = 2
--- The user decided against walls (2026-09-28): gates over the roads only, and a dino that slips in
--- between is the danger. With this off, existing wall sides are torn down (pieces, door, safehouse strip).
-local WALLS_ENABLED = false
-local FENCE_N, FENCE_W, FENCE_POST = { "fencing_01_48", "fencing_01_49" }, { "fencing_01_50", "fencing_01_51" }, "fencing_01_53"
+-- v3 (2026-09-29, the user: "sandbags surrounding the edge of the zone at all times, and the gun towers
+-- spaced out behind them evenly for coverage, so that only raids can breach"): a SANDBAG wall on the
+-- whole ring edge, road squares included (people hop sandbags; the checkpoints stay the gates), no doors,
+-- and a lamp gun every 20 tiles just behind it (TOWER_OFFSETS, skipped where a lamp already stands).
+-- 2026-09-28 the user had turned walls off (v2 fence); with this off, wall sides are torn down.
+local WALL_VER = 5                    -- 5 (2026-09-29): lamp guns 3 tiles behind the wall (were 1), wall rebuilt round them
+local WALLS_ENABLED = false             -- 2026-09-29 later: the user asked to remove the camp walls again (the rings go round the big safe zones instead)
+local SANDBAG_N, SANDBAG_W = "carpentry_02_13", "carpentry_02_12"   -- same pieces as the checkpoints
+local LAMP = "carpentry_02_59"
+local TOWER_OFFSETS = { -30, -10, 10, 30 }
+local TOWER_INSET = 3                 -- tiles behind the wall (the user: lamps sat in the bags)
+local TOWER_SEARCH = 4                -- tiles along the wall to look for a clear lamp square
+local TOWER_SPACING = 8               -- no new lamp within this of an existing one
 
 local function ringBox(zc)
     return zc[1] - GATE_RING, zc[2] - GATE_RING, zc[1] + GATE_RING, zc[2] + GATE_RING
@@ -919,10 +939,10 @@ local function sideSlots(zc, side)
     local slots = {}
     if side == "N" or side == "S" then
         local y = side == "N" and y0 or y1
-        for x = x0, x1 - 1 do slots[#slots + 1] = { x = x, y = y, along = x, sprite = FENCE_N[x % 2 + 1], door = DOOR_N, north = true } end
+        for x = x0, x1 - 1 do slots[#slots + 1] = { x = x, y = y, along = x, sprite = SANDBAG_N, north = true } end
     else
         local x = side == "W" and x0 or x1
-        for y = y0, y1 - 1 do slots[#slots + 1] = { x = x, y = y, along = y, sprite = FENCE_W[y % 2 + 1], door = DOOR_W, north = false } end
+        for y = y0, y1 - 1 do slots[#slots + 1] = { x = x, y = y, along = y, sprite = SANDBAG_W, north = false } end
     end
     return slots
 end
@@ -934,18 +954,54 @@ local function inGate(gates, side, along)
     return false
 end
 
-local function slotOk(sq)
-    if not sq or sq:getRoom() or isRoad(sq) then return false end
+local function slotOk(sq, noRoad)
+    if not sq or sq:getRoom() then return false end
+    if noRoad and isRoad(sq) then return false end
     local props = sq:getProperties()
     if props and props:has(IsoFlagType.water) then return false end
     local objs = sq:getObjects()
     for i = 0, objs:size() - 1 do
         local o = objs:get(i)
         local spr = o:getSprite()
+        local name = spr and spr:getName() or ""
         local p = spr and spr:getProperties()
-        if not (p and p:has(IsoFlagType.solidfloor)) and not isNatural(o) then return false end
+        if not (p and p:has(IsoFlagType.solidfloor)) and not isNatural(o) and not name:find("street") and not name:find("^location_") then return false end
     end
     return true
+end
+
+local function lampWithin(x, y, r)
+    local ld = ModData.getOrCreate("PELights")
+    for key in pairs(type(ld.lamps) == "table" and ld.lamps or {}) do
+        local lx, ly = tostring(key):match("^(-?%d+),(-?%d+),")
+        lx, ly = tonumber(lx), tonumber(ly)
+        if lx and (lx - x) ^ 2 + (ly - y) ^ 2 <= r * r then return true end
+    end
+    return false
+end
+
+-- Lamp guns behind one wall side: one near each TOWER_OFFSETS spot, one row inside the wall.
+local function planTowers(zc, side)
+    local x0, y0, x1, y1 = ringBox(zc)
+    local cell = getCell()
+    local out = {}
+    for _, off in ipairs(TOWER_OFFSETS) do
+        local horizontal = side == "N" or side == "S"
+        local bx = horizontal and zc[1] + off or (side == "W" and x0 + TOWER_INSET or x1 - 1 - TOWER_INSET)
+        local by = horizontal and (side == "N" and y0 + TOWER_INSET or y1 - 1 - TOWER_INSET) or zc[2] + off
+        if not lampWithin(bx, by, TOWER_SPACING) then
+            for d = 0, TOWER_SEARCH do
+                local found
+                for _, sgn in ipairs(d == 0 and { 1 } or { 1, -1 }) do
+                    local x = horizontal and bx + sgn * d or bx
+                    local y = horizontal and by or by + sgn * d
+                    if slotOk(cell:getGridSquare(x, y, 0), true) then found = { x = x, y = y, z = 0, s = LAMP, k = "lamp" } break end
+                end
+                if found then out[#out + 1] = found break end
+            end
+        end
+    end
+    return out
 end
 
 local function placeDoor(sq, sprite, north)
@@ -968,71 +1024,58 @@ end
 -- Builds one side (all its squares must be loaded). Returns the record stored in ModData.
 local function buildWallSide(idx, zc, side, gates)
     local cell = getCell()
-    local rec = { side = side, pieces = {}, door = nil, ver = WALL_VER }
-    local usable = {}
+    local rec = { side = side, pieces = {}, lamps = {}, ver = WALL_VER }
+    local usable = 0
+    local skipped = {}
     for _, s in ipairs(sideSlots(zc, side)) do
         if not inGate(gates, side, s.along) then
             local sq = cell:getGridSquare(s.x, s.y, 0)
-            if slotOk(sq) then usable[#usable + 1] = s end
-        end
-    end
-    -- a side without a road gate gets a door at the usable slot nearest its middle
-    local hasGate = false
-    for _, g in ipairs(gates) do if g.side == side then hasGate = true end end
-    local doorSlot
-    if not hasGate and #usable > 0 then
-        local mid = (side == "N" or side == "S") and zc[1] or zc[2]
-        for _, s in ipairs(usable) do
-            if not doorSlot or math.abs(s.along - mid) < math.abs(doorSlot.along - mid) then doorSlot = s end
-        end
-    end
-    local placed = 0
-    for _, s in ipairs(usable) do
-        local sq = cell:getGridSquare(s.x, s.y, 0)
-        clearPlants(sq)
-        for z = 0, WALL_LEVELS - 1 do
-            if z == 0 and s == doorSlot then
-                if placeDoor(sq, s.door, s.north) then placed = placed + 1 end
-                rec.door = { x = s.x, y = s.y, sprite = s.door, north = s.north }
+            if slotOk(sq) then
+                usable = usable + 1
+                clearPlants(sq)
+                rec.pieces[#rec.pieces + 1] = { x = s.x, y = s.y, z = 0, sprite = s.sprite }
             else
-                rec.pieces[#rec.pieces + 1] = { x = s.x, y = s.y, z = z, sprite = s.sprite }
+                -- why a square stays open: room, water, or the sprites standing on it
+                local why = "?"
+                if not sq then why = "unloaded"
+                elseif sq:getRoom() then why = "building"
+                elseif sq:getProperties() and sq:getProperties():has(IsoFlagType.water) then why = "water"
+                else
+                    local names = {}
+                    local objs = sq:getObjects()
+                    for i = 0, objs:size() - 1 do
+                        local spr = objs:get(i):getSprite()
+                        local n = spr and spr:getName() or "?"
+                        if not n:find("^blends_") and not n:find("^floors_") then names[#names + 1] = n end
+                    end
+                    why = table.concat(names, "+")
+                end
+                skipped[#skipped + 1] = s.along .. ":" .. why
             end
+        else
+            skipped[#skipped + 1] = s.along .. ":gate"
         end
     end
-    -- the south-east corner post closes the box where the east and south walls meet
-    if side == "E" then
-        local x0, y0, x1, y1 = ringBox(zc)
-        local sq = cell:getGridSquare(x1, y1, 0)
-        if slotOk(sq) then
-            for z = 0, WALL_LEVELS - 1 do rec.pieces[#rec.pieces + 1] = { x = x1, y = y1, z = z, sprite = FENCE_POST } end
-        end
+    local placed = placeParts(rec.pieces, false)
+    if PEDefenseLine and PEDefenseLine.placeAll then
+        rec.lamps = PEDefenseLine.placeAll(planTowers(zc, side))
     end
-    local p2 = placeParts(rec.pieces, false)
-    placed = placed + p2
-    -- safehouse strip
+    -- safehouse strip: no fire, no dismantling
     local x, y, w, h = wallRect(zc, side)
     local okE, existing = pcall(function() return SafeHouse.getSafeHouse(x, y, w, h) end)
     if not (okE and existing) then
         local ok, sh = pcall(function() return SafeHouse.addSafeHouse(x, y, w, h, GATE_OWNER) end)
         if ok and sh then pcall(function() sh:setTitle(campName(idx) .. " Wall " .. side) end) end
     end
-    log(string.format("%s wall %s built: %d pieces over %d of %d squares%s", campName(idx), side, placed,
-        #usable, #sideSlots(zc, side), rec.door and string.format(", door at %d,%d", rec.door.x, rec.door.y) or ""))
+    log(string.format("%s wall %s built: %d sandbags over %d of %d squares, %d lamp gun(s)", campName(idx), side, placed,
+        usable, #sideSlots(zc, side), #rec.lamps))
+    if #skipped > 0 then log(string.format("%s wall %s open squares: %s", campName(idx), side, table.concat(skipped, " "))) end
     return rec
 end
 
 local function repairWall(rec)
     local placed = placeParts(rec.pieces, true)
-    if rec.door then
-        local sq = getCell():getGridSquare(rec.door.x, rec.door.y, 0)
-        -- an open door shows a different sprite, so look for any door object rather than the sprite
-        local hasDoor = false
-        if sq then
-            local objs = sq:getObjects()
-            for i = 0, objs:size() - 1 do if instanceof(objs:get(i), "IsoDoor") then hasDoor = true break end end
-        end
-        if sq and not hasDoor and placeDoor(sq, rec.door.sprite, rec.door.north) then placed = placed + 1 end
-    end
+    if PEDefenseLine and PEDefenseLine.repairParts then placed = placed + PEDefenseLine.repairParts(rec.lamps) end
     return placed
 end
 
@@ -1109,20 +1152,25 @@ local function buildTick()
                     if zd.scanned[side] then
                         for _, off in ipairs(CAMP_SEG_OFFSETS) do
                             local key = side .. ":" .. off
+                            local old = zd.segs[key]
+                            if old and old.ver ~= DL.SEG_VER and (old.state ~= "post" or getCell():getGridSquare(old.x, old.y, 0)) then
+                                if old.state == "post" then DL.clearParts(old.parts) end
+                                zd.segs[key] = nil
+                            end
                             if not zd.segs[key] then
                                 local horizontal = side == "N" or side == "S"
                                 local x = horizontal and zc[1] + off or (side == "W" and zc[1] - GATE_RING or zc[1] + GATE_RING)
                                 local y = horizontal and (side == "N" and zc[2] - GATE_RING or zc[2] + GATE_RING) or zc[2] + off
                                 if nearGate(zd.gates, x, y) then
-                                    zd.segs[key] = { state = "none" }
+                                    zd.segs[key] = { state = "none", ver = DL.SEG_VER }
                                 else
                                     local plan, lx, ly = DL.planSegment(x, y, horizontal, zc)
                                     if plan then
                                         local parts = DL.placeAll(plan)
-                                        zd.segs[key] = { state = "post", x = lx, y = ly, parts = parts }
+                                        zd.segs[key] = { state = "post", x = lx, y = ly, parts = parts, ver = DL.SEG_VER }
                                         log(string.format("%s ring gate %s built at %d,%d (%d pieces)", campName(idx), key, lx, ly, #parts))
                                     elseif plan == nil then
-                                        zd.segs[key] = { state = "none" }
+                                        zd.segs[key] = { state = "none", ver = DL.SEG_VER }
                                     end
                                 end
                             end
@@ -1136,6 +1184,10 @@ local function buildTick()
                 local rec = zd.walls[side]
                 if rec and (rec.ver ~= WALL_VER or not WALLS_ENABLED) and sideLoaded(zc, side) then
                     local removed = clearOldCourse(0, 0, rec.pieces)      -- pieces hold absolute coordinates
+                    if rec.lamps and PEDefenseLine and PEDefenseLine.clearParts then
+                        PEDefenseLine.clearParts(rec.lamps)
+                        removed = removed + #rec.lamps
+                    end
                     if rec.door then
                         local sq = getCell():getGridSquare(rec.door.x, rec.door.y, 0)
                         local objs = sq and sq:getObjects()
@@ -1145,7 +1197,7 @@ local function buildTick()
                     end
                     zd.walls[side] = nil
                     if WALLS_ENABLED then
-                        log(string.format("%s wall %s: v%s removed (%d pieces), rebuilding as fence", campName(idx), side, tostring(rec.ver or 1), removed))
+                        log(string.format("%s wall %s: v%s removed (%d pieces), rebuilding as sandbags", campName(idx), side, tostring(rec.ver or 1), removed))
                     else
                         local x, y, w, h = wallRect(zc, side)
                         local okS, sh = pcall(function() return SafeHouse.getSafeHouse(x, y, w, h) end)
