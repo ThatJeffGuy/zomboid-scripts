@@ -197,6 +197,13 @@ all. Run it every 5 minutes from root's crontab:
     clan near a player, list bandits and animal corpses, trigger a hunt or raid,
     build sample gates. It only runs while someone is online if the server has
     PauseEmpty on.
+  - `PE_PrimitiveNails.lua` -- lets
+    [Haiku Primitive](https://steamcommunity.com/sharedfiles/filedetails/?id=3649911353)'s
+    Bamboo Nails stand in for nails in ~100 vanilla build and craft recipes.
+    The mod's own patch reads recipe inputs through reflection, which B42.21
+    refuses outside debug mode, so it silently does nothing; this uses the
+    public `InputScript:getItems()` instead. The map mod ships the same file as
+    `shared/ZEM_PrimitiveNails.lua` so players' crafting menus match.
   - `ze-switchover.sh` / `pz-4221-reminder.sh` -- the plan for turning the Lua
     checksum back on once B42.21 (which re-enables `loadstring`) is Stable, and
     a one-shot email reminder for it. Done on Zomboid Evolved: the scripts run
