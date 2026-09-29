@@ -316,6 +316,12 @@ Events.OnTick.Add(function()
 end)
 
 Events.OnServerStarted.Add(function()
+    -- write the HUD/status data right away: with PauseEmpty the server can sit paused (no ticks) until
+    -- someone joins, and the status page would have nothing to show (seen after the 2026-09-29 wipe)
+    pcall(function()
+        local h, DL = heat(), line()
+        if h and h.safeRadius and DL and DL.activeRing then shareState(data(), h.safeRadius(), h.serverDays()) end
+    end)
     log(string.format("active: path %s; line warning %dh ahead; HUD + status data", PATH_ENABLED and "on" or "OFF (restoring old tiles)", WARN_HOURS))
 end)
 
